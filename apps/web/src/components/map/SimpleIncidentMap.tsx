@@ -299,7 +299,7 @@ export default function SimpleIncidentMap({
                 style={{ backgroundColor: getStatusColor(status) }}
               />
               <span className="text-xs text-gray-600">
-                {getStatusLabel(status)}: {count}
+                {getStatusLabel(status, t)}: {count}
               </span>
             </div>
           ))}
