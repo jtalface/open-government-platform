@@ -71,11 +71,26 @@ enum AuditAction {
   CHANNEL_POST_CREATED
   CHANNEL_POST_UPDATED
   CHANNEL_POST_DELETED
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PROJECT_STATUS_CHANGED
+  PROJECT_ARCHIVED
+  PROJECT_UNARCHIVED
 }
 
 enum PostVisibility {
   PUBLIC
   DRAFT
+}
+
+enum ProjectStatus {
+  OPEN
+  PLANNING
+  FUNDED
+  BIDDING
+  ASSIGNED
+  WORK_STARTED
+  COMPLETED
 }
 
 // ===========================================
@@ -101,6 +116,8 @@ model Municipality {
   auditLogs        AuditLog[]
   officialChannels OfficialChannel[]
   channelPosts     ChannelPost[]
+  projects         Project[]
+  projectUpdates   ProjectUpdate[]
 
   @@index([slug])
   @@index([active])
@@ -136,6 +153,8 @@ model User {
   sessions           Session[]
   channelPermissions ChannelPermission[]
   channelPosts       ChannelPost[]
+  createdProjects    Project[]           @relation("CreatedProjects")
+  projectUpdates     ProjectUpdate[]
 
   @@index([email])
   @@index([municipalityId])
@@ -202,6 +221,7 @@ model Category {
   municipality Municipality    @relation(fields: [municipalityId], references: [id])
   incidents    IncidentEvent[]
   tickets      Ticket[]
+  projects     Project[]
 
   @@unique([municipalityId, slug])
   @@index([municipalityId])
@@ -322,6 +342,7 @@ model Ticket {
   createdBy    User           @relation("CreatedTickets", fields: [createdByUserId], references: [id])
   assignedTo   User?          @relation("AssignedTickets", fields: [assignedToUserId], references: [id])
   updates      TicketUpdate[]
+  project      Project?
 
   @@index([municipalityId])
   @@index([incidentId])
@@ -448,4 +469,71 @@ model ChannelPost {
   @@index([publishedAt(sort: Desc)])
   @@index([deletedAt])
   @@map("channel_posts")
+}
+
+// ===========================================
+// PROJECTS MODELS
+// ===========================================
+
+model Project {
+  id                  String         @id @default(uuid())
+  municipalityId      String
+  ticketId            String         @unique
+  categoryId          String
+  title               String
+  description         String         @db.Text
+  status              ProjectStatus  @default(OPEN)
+  budgetAmount        Decimal?       @db.Decimal(15, 2)
+  budgetCurrency      String         @default("USD")
+  fundingSource       String?
+  biddingReference    String?
+  assignedToName      String?
+  assignedToId        String?
+  assignedAt          DateTime?
+  workStartedAt       DateTime?
+  completedAt         DateTime?
+  archivedAt          DateTime?
+  archivedByUserId    String?
+  createdByUserId     String
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  // Relations
+  municipality Municipality     @relation(fields: [municipalityId], references: [id])
+  ticket       Ticket           @relation(fields: [ticketId], references: [id])
+  category     Category         @relation(fields: [categoryId], references: [id])
+  createdBy    User             @relation("CreatedProjects", fields: [createdByUserId], references: [id])
+  updates      ProjectUpdate[]
+
+  @@index([municipalityId])
+  @@index([ticketId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdByUserId])
+  @@index([archivedAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("projects")
+}
+
+model ProjectUpdate {
+  id             String           @id @default(uuid())
+  projectId      String
+  municipalityId String
+  authorUserId   String
+  visibility     UpdateVisibility @default(PUBLIC)
+  message        String           @db.Text
+  attachments    Json             @default("[]")
+  createdAt      DateTime         @default(now())
+
+  // Relations
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  municipality Municipality @relation(fields: [municipalityId], references: [id])
+  author       User         @relation(fields: [authorUserId], references: [id])
+
+  @@index([projectId])
+  @@index([municipalityId])
+  @@index([authorUserId])
+  @@index([visibility])
+  @@index([createdAt(sort: Desc)])
+  @@map("project_updates")
 }

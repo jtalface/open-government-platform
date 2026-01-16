@@ -6,10 +6,15 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting database seed...");
 
-  // Clean existing data
+  // Clean existing data (in correct order to respect foreign keys)
   await prisma.auditLog.deleteMany();
+  await prisma.projectUpdate.deleteMany();
+  await prisma.project.deleteMany();
   await prisma.ticketUpdate.deleteMany();
   await prisma.ticket.deleteMany();
+  await prisma.channelPost.deleteMany();
+  await prisma.channelPermission.deleteMany();
+  await prisma.officialChannel.deleteMany();
   await prisma.vote.deleteMany();
   await prisma.incidentEvent.deleteMany();
   await prisma.category.deleteMany();
@@ -98,7 +103,7 @@ async function main() {
         municipalityId: lisbon.id,
         name: "Saúde Pública",
         slug: "saude-publica",
-        icon: "health",
+        icon: "🏥",
         color: "#EF4444",
         description: "Questões de saúde pública e saneamento",
         sortOrder: 1,
@@ -109,7 +114,7 @@ async function main() {
         municipalityId: lisbon.id,
         name: "Obras Públicas e Habitação",
         slug: "obras-publicas",
-        icon: "construction",
+        icon: "🏗️",
         color: "#F59E0B",
         description: "Infraestrutura, construção e habitação",
         sortOrder: 2,
@@ -120,7 +125,7 @@ async function main() {
         municipalityId: lisbon.id,
         name: "Segurança Pública",
         slug: "seguranca-publica",
-        icon: "shield",
+        icon: "🛡️",
         color: "#3B82F6",
         description: "Questões de segurança e policiamento",
         sortOrder: 3,
@@ -131,7 +136,7 @@ async function main() {
         municipalityId: lisbon.id,
         name: "Eventos",
         slug: "eventos",
-        icon: "calendar",
+        icon: "📅",
         color: "#8B5CF6",
         description: "Eventos comunitários e culturais",
         sortOrder: 4,
@@ -393,6 +398,157 @@ async function main() {
   });
 
   console.log("✓ Created 3 sample channel posts");
+
+  // Create Tickets
+  const ticket1 = await prisma.ticket.create({
+    data: {
+      municipalityId: lisbon.id,
+      categoryId: categories[0].id, // Saúde Pública
+      title: "Implementar sistema de triagem no centro de saúde",
+      description: "Necessário criar um sistema de triagem para melhorar o atendimento no centro de saúde da Baixa.",
+      status: "IN_PROGRESS",
+      priority: "HIGH",
+      createdByUserId: manager.id,
+      publicVisibility: "PUBLIC",
+    },
+  });
+
+  const ticket2 = await prisma.ticket.create({
+    data: {
+      municipalityId: lisbon.id,
+      categoryId: categories[1].id, // Obras Públicas
+      title: "Reparação de pavimento na Avenida da Liberdade",
+      description: "Reparar buracos e renovar pavimento ao longo de 2km da Avenida da Liberdade.",
+      status: "DONE",
+      priority: "URGENT",
+      createdByUserId: manager.id,
+      assignedToUserId: manager.id,
+      publicVisibility: "PUBLIC",
+    },
+  });
+
+  const ticket3 = await prisma.ticket.create({
+    data: {
+      municipalityId: lisbon.id,
+      categoryId: categories[2].id, // Segurança Pública
+      title: "Instalação de câmeras de vigilância",
+      description: "Instalar sistema de vigilância em áreas identificadas como críticas.",
+      status: "NEW",
+      priority: "MEDIUM",
+      createdByUserId: admin.id,
+      publicVisibility: "PUBLIC",
+    },
+  });
+
+  const ticket4 = await prisma.ticket.create({
+    data: {
+      municipalityId: lisbon.id,
+      categoryId: categories[1].id, // Obras Públicas
+      title: "Construção de novo parque infantil",
+      description: "Projeto para construção de parque infantil no bairro de Belém.",
+      status: "DONE",
+      priority: "MEDIUM",
+      createdByUserId: admin.id,
+      assignedToUserId: manager.id,
+      publicVisibility: "PUBLIC",
+    },
+  });
+
+  console.log("✓ Created 4 sample tickets");
+
+  // Create Projects
+  const project1 = await prisma.project.create({
+    data: {
+      municipalityId: lisbon.id,
+      ticketId: ticket1.id,
+      categoryId: categories[0].id,
+      title: "Sistema de Triagem - Centro de Saúde Baixa",
+      description: "Implementação de sistema digital de triagem para otimizar o atendimento e reduzir tempo de espera. Inclui formação de equipe e instalação de equipamentos.",
+      status: "PLANNING",
+      budgetAmount: 25000,
+      budgetCurrency: "EUR",
+      fundingSource: "Orçamento Municipal 2026",
+      createdByUserId: admin.id,
+    },
+  });
+
+  const project2 = await prisma.project.create({
+    data: {
+      municipalityId: lisbon.id,
+      ticketId: ticket2.id,
+      categoryId: categories[1].id,
+      title: "Renovação Avenida da Liberdade",
+      description: "Projeto de renovação completa do pavimento da Avenida da Liberdade, incluindo drenagem e sinalização.",
+      status: "WORK_STARTED",
+      budgetAmount: 150000,
+      budgetCurrency: "EUR",
+      fundingSource: "Fundo Europeu de Desenvolvimento Regional",
+      biddingReference: "CP-2026-003",
+      assignedToName: "Construtora Silva & Filhos",
+      assignedToId: "vendor-001",
+      assignedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      workStartedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+      createdByUserId: admin.id,
+    },
+  });
+
+  const project3 = await prisma.project.create({
+    data: {
+      municipalityId: lisbon.id,
+      ticketId: ticket4.id,
+      categoryId: categories[1].id,
+      title: "Parque Infantil de Belém",
+      description: "Construção de parque infantil moderno com equipamentos de segurança certificados e área verde.",
+      status: "COMPLETED",
+      budgetAmount: 45000,
+      budgetCurrency: "EUR",
+      fundingSource: "Orçamento Municipal 2025",
+      biddingReference: "CP-2025-089",
+      assignedToName: "Parques & Jardins Lda",
+      assignedToId: "vendor-002",
+      assignedAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), // 120 days ago
+      workStartedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago
+      completedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
+      archivedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago (archived)
+      archivedByUserId: admin.id,
+      createdByUserId: admin.id,
+    },
+  });
+
+  console.log("✓ Created 3 sample projects");
+
+  // Create Project Updates
+  await prisma.projectUpdate.create({
+    data: {
+      projectId: project2.id,
+      municipalityId: lisbon.id,
+      authorUserId: manager.id,
+      visibility: "PUBLIC",
+      message: "Obras iniciadas conforme cronograma. Primeira fase (preparação do terreno) concluída.",
+    },
+  });
+
+  await prisma.projectUpdate.create({
+    data: {
+      projectId: project2.id,
+      municipalityId: lisbon.id,
+      authorUserId: manager.id,
+      visibility: "PUBLIC",
+      message: "Segunda fase em andamento. Remoção do pavimento antigo a 60% de conclusão.",
+    },
+  });
+
+  await prisma.projectUpdate.create({
+    data: {
+      projectId: project3.id,
+      municipalityId: lisbon.id,
+      authorUserId: admin.id,
+      visibility: "PUBLIC",
+      message: "Projeto concluído com sucesso. Inauguração realizada com presença da comunidade local.",
+    },
+  });
+
+  console.log("✓ Created project updates");
 
   console.log("✅ Database seeded successfully!");
   console.log("\n📋 Test Accounts:");

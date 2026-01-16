@@ -334,6 +334,70 @@ The Official Channels feature enables municipality officials to communicate dire
 
 All permissions are scoped to the user's municipality.
 
+## Projects
+
+Municipal projects are the next step in the workflow after tickets have been triaged. Once a ticket is approved, administrators can create a **Project** to execute the work. Projects are visible to all users (Citizens, Managers, Admins) for full transparency.
+
+### Project Lifecycle
+
+Projects follow a well-defined status flow:
+
+1. **OPEN** - Initial state after creation
+2. **PLANNING** - Project is being planned
+3. **FUNDED** - Funding has been secured (requires `fundingSource`)
+4. **BIDDING** - Project is in the bidding/tender process
+5. **ASSIGNED** - Contractor/vendor has been assigned (requires `assignedToName`)
+6. **WORK_STARTED** - Construction/implementation has begun
+7. **COMPLETED** - Project is complete
+
+### Key Features
+
+- **One Project per Ticket**: Each project is linked to exactly one ticket (unique constraint)
+- **Municipality Scoping**: All projects are scoped to a municipality
+- **Budget Tracking**: Track budget amount, currency, and funding source
+- **Contractor Management**: Track assigned contractors and bidding references
+- **Timeline Tracking**: Automatic timestamps for key milestones (assigned, work started, completed)
+- **Archiving**: Projects can be archived while maintaining full history
+- **Public Updates**: Projects can have public updates for transparency
+- **Status Validation**: Status transitions enforce business rules (e.g., FUNDED requires funding source)
+
+### Access Control (RBAC)
+
+- **Citizen**: Can view all projects and public updates in their municipality (read-only)
+- **Manager**: Can view all projects and public updates in their municipality (read-only)
+- **Admin**: Full CRUD access - create, edit, update status, archive, unarchive projects
+
+### Data Model
+
+**Project**
+- Links to: Municipality, Ticket (unique), Category, Creator (User)
+- Fields: title, description, status, budget (amount + currency), funding source, bidding reference, contractor info
+- Timestamps: created, updated, assigned, work started, completed, archived
+- Relations: Updates (1-to-many)
+
+**ProjectUpdate**
+- Links to: Project, Municipality, Author (User)
+- Fields: message, visibility (PUBLIC | INTERNAL), attachments
+- Public updates are visible to all users; internal updates only to managers/admins
+
+### UI Features
+
+**Projects Tab** (available to all users)
+- Three sections: Ongoing, Completed, Archived
+- Project cards show: title, category, status, budget, funding, contractor, last update
+- Click to view full project details
+
+**Project Detail Page**
+- Full project information and timeline
+- Link to originating ticket
+- Public updates feed
+- Admin actions: Edit, Change Status, Archive/Unarchive
+
+**Create Project from Ticket** (Admin only)
+- Available on ticket detail pages
+- Pre-fills project data from ticket
+- Enforces one project per ticket constraint
+
 ### API Endpoints
 
 **Citizen (Read)**
@@ -353,6 +417,19 @@ All permissions are scoped to the user's municipality.
 - `GET /api/admin/channels/:channelId/permissions` - List permissions
 - `POST /api/admin/channels/:channelId/permissions` - Grant permission
 - `DELETE /api/admin/channels/:channelId/permissions?userId=X` - Revoke permission
+
+**Projects API**
+
+*Citizen/Manager/Admin (Read)*
+- `GET /api/projects?status=X&archived=true/false&categoryId=X` - List projects with filters
+- `GET /api/projects/:projectId` - Get project details (filters updates by role)
+
+*Admin Only (Write)*
+- `POST /api/tickets/:ticketId/project` - Create project from ticket
+- `PATCH /api/projects/:projectId` - Update project fields
+- `POST /api/projects/:projectId/status` - Change project status
+- `POST /api/projects/:projectId/archive` - Archive project
+- `DELETE /api/projects/:projectId/archive` - Unarchive project
 
 ### Database Schema
 

@@ -17,6 +17,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: t("nav.dashboard"), href: "/dashboard", icon: "📊" },
     { name: t("nav.incidents"), href: "/dashboard/incidents", icon: "📍" },
     { name: t("nav.map"), href: "/dashboard/map", icon: "🗺️" },
+    { name: t("nav.projects"), href: "/projects", icon: "🏗️" },
     { name: t("nav.tickets"), href: "/dashboard/tickets", icon: "🎫" },
   ];
 

@@ -8,7 +8,7 @@ import { Logo } from "./Logo";
 
 interface CitizenHeaderProps {
   session: any;
-  activeTab?: "incidents" | "map" | "channels";
+  activeTab?: "incidents" | "map" | "channels" | "projects";
 }
 
 export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
@@ -55,6 +55,16 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
                 }`}
               >
                 📢 {t("nav.channels")}
+              </Link>
+              <Link
+                href="/projects"
+                className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                  activeTab === "projects" || pathname.startsWith("/projects")
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                🏗️ {t("nav.projects")}
               </Link>
             </nav>
           </div>
