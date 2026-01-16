@@ -175,14 +175,17 @@ export default function SimpleIncidentMap({
         mapInstanceRef.current
       );
 
+      const dateFnsLocale = locale === "pt" ? ptBR : enUS;
+      const translatedCategory = translateCategory(incident.category?.name || "", t);
+
       const popupContent = `
         <div style="padding: 8px; min-width: 200px;">
           <div style="margin-bottom: 8px;">
             <span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-              ${getStatusLabel(incident.status)}
+              ${getStatusLabel(incident.status, t)}
             </span>
             <span style="color: #666; font-size: 12px; margin-left: 8px;">
-              ${incident.category?.name || ""}
+              ${translatedCategory || t("common.noCategory")}
             </span>
           </div>
           <h3 style="margin: 8px 0; font-weight: 600; color: #111;">
@@ -193,8 +196,12 @@ export default function SimpleIncidentMap({
           </p>
           <div style="margin: 8px 0; font-size: 12px; color: #666;">
             ${incident.neighborhood ? `<p>📍 ${incident.neighborhood.name}</p>` : ""}
-            <p>👤 ${incident.createdBy?.name || "Anónimo"}</p>
-            <p>👍 ${incident.voteStats?.upvotes || 0} votos</p>
+            <p>👤 ${incident.createdBy?.name || t("common.anonymous")}</p>
+            <p>👍 ${incident.voteStats?.upvotes || 0} ${t("common.votes")}</p>
+            <p>🕒 ${formatDistanceToNow(new Date(incident.createdAt), {
+              addSuffix: true,
+              locale: dateFnsLocale,
+            })}</p>
           </div>
           <a href="/incidents/${incident.id}" style="
             display: inline-block;
@@ -206,7 +213,7 @@ export default function SimpleIncidentMap({
             font-size: 14px;
             margin-top: 8px;
           ">
-            Ver detalhes →
+            ${t("common.viewDetails")} →
           </a>
         </div>
       `;
@@ -340,14 +347,28 @@ function getStatusColor(status: string): string {
   return colors[status] || "#3b82f6";
 }
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
-    OPEN: "Aberto",
-    TRIAGED: "Triado",
-    TICKETED: "Em Resolução",
-    RESOLVED: "Resolvido",
-    CLOSED: "Fechado",
+    OPEN: t("incidents.status_open"),
+    TRIAGED: t("incidents.status_triaged"),
+    TICKETED: t("incidents.status_ticketed"),
+    RESOLVED: t("incidents.status_resolved"),
+    CLOSED: t("incidents.status_closed"),
   };
   return labels[status] || status;
+}
+
+function translateCategory(categoryName: string, t: (key: string) => string): string {
+  const categoryMap: Record<string, string> = {
+    "Saúde Pública": t("categories.publicHealth"),
+    "Infraestrutura": t("categories.infrastructure"),
+    "Segurança": t("categories.safety"),
+    "Limpeza": t("categories.cleaning"),
+    "Trânsito": t("categories.traffic"),
+    "Iluminação": t("categories.lighting"),
+    "Meio Ambiente": t("categories.environment"),
+  };
+  
+  return categoryMap[categoryName] || categoryName;
 }
 

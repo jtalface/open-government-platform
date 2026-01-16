@@ -22,7 +22,9 @@
     "viewDetails": "View details",
     "anonymous": "Anonymous",
     "notAvailable": "N/A",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "votes": "votes",
+    "noCategory": "No category"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -63,6 +65,12 @@
     "found": "incidents found",
     "noIncidents": "No incidents found",
     "noIncidentsFound": "No incidents found",
+    "incidentNotFound": "Incident not found",
+    "locationUnidentified": "Location unidentified",
+    "coordinates": "Coordinates",
+    "isImportantToYou": "Is this incident important to you?",
+    "peopleVoted": "people voted",
+    "serviceStatus": "Service Status",
     "withTicket": "With Ticket",
     "score": "Score",
     "viewOnMap": "View on map",
@@ -149,6 +157,15 @@
     "noIncidents": "No incidents found with selected filters",
     "title": "Incident Map",
     "description": "View all reported incidents on the map"
+  },
+  "categories": {
+    "publicHealth": "Public Health",
+    "infrastructure": "Infrastructure",
+    "safety": "Safety",
+    "cleaning": "Cleaning",
+    "traffic": "Traffic",
+    "lighting": "Lighting",
+    "environment": "Environment"
   }
 }
 

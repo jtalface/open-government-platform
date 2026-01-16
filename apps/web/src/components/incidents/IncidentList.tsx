@@ -5,9 +5,11 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, Badge, LoadingSpinner } from "@ogp/ui";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS } from "date-fns/locale";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function IncidentList() {
+  const { t, locale } = useTranslation();
   const searchParams = useSearchParams();
 
   const { data, isLoading } = useQuery({
@@ -32,10 +34,12 @@ export function IncidentList() {
   if (incidents.length === 0) {
     return (
       <div className="rounded-xl bg-white p-12 text-center shadow-sm">
-        <p className="text-gray-500">Nenhuma ocorrência encontrada</p>
+        <p className="text-gray-500">{t("incidents.noIncidentsFound")}</p>
       </div>
     );
   }
+
+  const dateFnsLocale = locale === "pt" ? ptBR : enUS;
 
   return (
     <div className="space-y-4">
@@ -45,9 +49,9 @@ export function IncidentList() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="mb-2 flex items-center gap-2">
-                  <Badge variant="info">{incident.category.name}</Badge>
+                  <Badge variant="info">{translateCategory(incident.category.name, t)}</Badge>
                   <Badge variant={getStatusVariant(incident.status)}>
-                    {getStatusLabel(incident.status)}
+                    {getStatusLabel(incident.status, t)}
                   </Badge>
                 </div>
 
@@ -57,13 +61,13 @@ export function IncidentList() {
 
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span>
-                    📍 {incident.neighborhood?.name || "Localização não identificada"}
+                    📍 {incident.neighborhood?.name || t("incidents.locationUnidentified")}
                   </span>
                   <span>
                     🕐{" "}
                     {formatDistanceToNow(new Date(incident.createdAt), {
                       addSuffix: true,
-                      locale: ptBR,
+                      locale: dateFnsLocale,
                     })}
                   </span>
                 </div>
@@ -74,7 +78,7 @@ export function IncidentList() {
                   <span className="font-semibold">
                     {(incident.voteStats?.upvotes || 0) - (incident.voteStats?.downvotes || 0)}
                   </span>
-                  <span className="text-gray-500">votos</span>
+                  <span className="text-gray-500">{t("common.votes")}</span>
                 </div>
               </div>
             </div>
@@ -102,20 +106,33 @@ function getStatusVariant(status: string): "default" | "success" | "warning" | "
   }
 }
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string, t: (key: string) => string): string {
   switch (status) {
     case "OPEN":
-      return "Aberto";
+      return t("incidents.status_open");
     case "TRIAGED":
-      return "Triagem";
+      return t("incidents.status_triaged");
     case "TICKETED":
-      return "Em Atendimento";
+      return t("incidents.status_ticketed");
     case "RESOLVED":
-      return "Resolvido";
+      return t("incidents.status_resolved");
     case "CLOSED":
-      return "Fechado";
+      return t("incidents.status_closed");
     default:
       return status;
   }
 }
 
+function translateCategory(categoryName: string, t: (key: string) => string): string {
+  const categoryMap: Record<string, string> = {
+    "Saúde Pública": t("categories.publicHealth"),
+    "Infraestrutura": t("categories.infrastructure"),
+    "Segurança": t("categories.safety"),
+    "Limpeza": t("categories.cleaning"),
+    "Trânsito": t("categories.traffic"),
+    "Iluminação": t("categories.lighting"),
+    "Meio Ambiente": t("categories.environment"),
+  };
+  
+  return categoryMap[categoryName] || categoryName;
+}

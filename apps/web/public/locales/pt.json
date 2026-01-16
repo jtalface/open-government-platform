@@ -22,7 +22,9 @@
     "viewDetails": "Ver detalhes",
     "anonymous": "Anónimo",
     "notAvailable": "N/D",
-    "unknown": "Desconhecido"
+    "unknown": "Desconhecido",
+    "votes": "votos",
+    "noCategory": "Sem categoria"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -63,6 +65,12 @@
     "found": "ocorrências encontradas",
     "noIncidents": "Nenhuma ocorrência encontrada",
     "noIncidentsFound": "Nenhuma ocorrência encontrada",
+    "incidentNotFound": "Ocorrência não encontrada",
+    "locationUnidentified": "Localização não identificada",
+    "coordinates": "Coordenadas",
+    "isImportantToYou": "Esta ocorrência é importante para você?",
+    "peopleVoted": "pessoas votaram",
+    "serviceStatus": "Status do Atendimento",
     "withTicket": "Com Ticket",
     "score": "Pontuação",
     "viewOnMap": "Ver no mapa",
@@ -149,6 +157,15 @@
     "noIncidents": "Nenhuma ocorrência encontrada com os filtros selecionados",
     "title": "Mapa de Ocorrências",
     "description": "Visualize todas as ocorrências reportadas no mapa"
+  },
+  "categories": {
+    "publicHealth": "Saúde Pública",
+    "infrastructure": "Infraestrutura",
+    "safety": "Segurança",
+    "cleaning": "Limpeza",
+    "traffic": "Trânsito",
+    "lighting": "Iluminação",
+    "environment": "Meio Ambiente"
   }
 }
 
