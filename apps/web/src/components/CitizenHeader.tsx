@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { Logo } from "./Logo";
 
 interface CitizenHeaderProps {
   session: any;
@@ -21,8 +22,8 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold text-blue-600">
-              OGP
+            <Link href="/" className="flex items-center">
+              <Logo role="CITIZEN" size="md" />
             </Link>
             <nav className="flex gap-4">
               <Link

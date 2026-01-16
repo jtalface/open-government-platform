@@ -1,7 +1,7 @@
 {
-  "name": "Open Government Platform",
-  "short_name": "OGP",
-  "description": "Municipal incident reporting and transparency platform",
+  "name": "Cidade da Beira",
+  "short_name": "Beira",
+  "description": "Plataforma municipal de reporte de ocorrências e transparência",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

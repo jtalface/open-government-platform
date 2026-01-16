@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { LanguageSwitcher } from "../LanguageSwitcher";
 import { CreatePostButton } from "../channels/CreatePostButton";
+import { Logo } from "../Logo";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -30,7 +31,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-blue-600">OGP Manager</h1>
+              <div className="flex items-center gap-2">
+                <Logo role="MANAGER" size="md" />
+              </div>
 
               <nav className="flex gap-4">
                 {navigation.map((item) => (

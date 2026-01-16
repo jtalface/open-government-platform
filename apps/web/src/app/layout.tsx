@@ -6,15 +6,15 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Open Government Platform - Lisboa",
-  description: "Municipal incident reporting and transparency platform",
+  title: "Cidade da Beira - Plataforma de Transparência",
+  description: "Plataforma municipal de reporte de ocorrências e transparência",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   themeColor: "#3b82f6",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "OGP",
+    title: "Beira",
   },
 };
 

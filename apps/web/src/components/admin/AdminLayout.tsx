@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { LanguageSwitcher } from "../LanguageSwitcher";
+import { Logo } from "../Logo";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,7 +30,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-white">⚙️ OGP Admin</h1>
+              <div className="flex items-center gap-2">
+                <Logo role="ADMIN" size="md" textColor="text-white" />
+              </div>
 
               <nav className="flex gap-4">
                 {navigation.map((item) => (
