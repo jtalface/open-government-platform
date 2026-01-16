@@ -4,9 +4,12 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@ogp/ui";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,13 +28,13 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Email ou senha inválidos");
+        setError(t("auth.invalidCredentials"));
       } else {
         router.push("/");
         router.refresh();
       }
     } catch (err) {
-      setError("Erro ao fazer login");
+      setError(t("common.error"));
     } finally {
       setIsLoading(false);
     }
@@ -40,15 +43,19 @@ export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher />
+        </div>
+
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">Open Government Platform</h1>
-          <p className="mt-2 text-gray-600">Entre com sua conta</p>
+          <p className="mt-2 text-gray-600">{t("auth.signInTitle")}</p>
         </div>
 
         <div className="rounded-xl bg-white p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              label="Email"
+              label={t("auth.email")}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -57,7 +64,7 @@ export default function SignInPage() {
             />
 
             <Input
-              label="Senha"
+              label={t("auth.password")}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -70,15 +77,9 @@ export default function SignInPage() {
             )}
 
             <Button type="submit" className="w-full" isLoading={isLoading}>
-              Entrar
+              {isLoading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
-
-          <div className="mt-6 border-t pt-6">
-            <p className="text-center text-sm text-gray-600">
-              Contas de teste disponíveis no README
-            </p>
-          </div>
         </div>
       </div>
     </div>

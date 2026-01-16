@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function ManagerIncidentFilters() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -30,28 +32,28 @@ export function ManagerIncidentFilters() {
   };
 
   const statuses = [
-    { value: "", label: "Todos os status" },
-    { value: "OPEN", label: "Aberto" },
-    { value: "TRIAGED", label: "Triagem" },
-    { value: "TICKETED", label: "Em Atendimento" },
-    { value: "RESOLVED", label: "Resolvido" },
-    { value: "CLOSED", label: "Fechado" },
+    { value: "", label: t("incidents.allStatuses") },
+    { value: "OPEN", label: t("incidents.status_open") },
+    { value: "TRIAGED", label: t("incidents.status_triaged") },
+    { value: "TICKETED", label: t("incidents.status_ticketed") },
+    { value: "RESOLVED", label: t("incidents.status_resolved") },
+    { value: "CLOSED", label: t("incidents.status_closed") },
   ];
 
   return (
     <div className="rounded-xl bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtros</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("incidents.filters")}</h2>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Category Filter */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Categoria</label>
+          <label className="mb-2 block text-sm font-medium text-gray-700">{t("incidents.category")}</label>
           <select
             value={currentCategory}
             onChange={(e) => handleFilterChange("categoryId", e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Todas as categorias</option>
+            <option value="">{t("incidents.allCategories")}</option>
             {categories?.map((cat: any) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -62,7 +64,7 @@ export function ManagerIncidentFilters() {
 
         {/* Status Filter */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
+          <label className="mb-2 block text-sm font-medium text-gray-700">{t("incidents.status")}</label>
           <select
             value={currentStatus}
             onChange={(e) => handleFilterChange("status", e.target.value)}

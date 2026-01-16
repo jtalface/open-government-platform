@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LoadingSpinner, Badge } from "@ogp/ui";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS } from "date-fns/locale";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 interface SimpleIncidentMapProps {
   categoryId?: string;
@@ -18,12 +19,15 @@ export default function SimpleIncidentMap({
   status,
   showFilters = true,
 }: SimpleIncidentMapProps) {
+  const { t, locale } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryId || "");
   const [selectedStatus, setSelectedStatus] = useState<string>(status || "");
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef<any>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  
+  const dateLocale = locale === "en" ? enUS : ptBR;
 
   // Fetch incidents
   const { data: incidentsData, isLoading: incidentsLoading } = useQuery({
@@ -241,7 +245,7 @@ export default function SimpleIncidentMap({
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Todas as categorias</option>
+                <option value="">{t("incidents.allCategories")}</option>
                 {categories?.map((cat: any) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.icon} {cat.name}
@@ -270,7 +274,7 @@ export default function SimpleIncidentMap({
 
             <div className="flex items-end">
               <div className="text-sm text-gray-600">
-                <strong>{incidents.length}</strong> ocorrências encontradas
+                <strong>{incidents.length}</strong> {t("incidents.found")}
               </div>
             </div>
           </div>
@@ -315,7 +319,7 @@ export default function SimpleIncidentMap({
           <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-900 bg-opacity-50">
             <div className="rounded-xl bg-white p-6 text-center shadow-lg">
               <p className="text-gray-600">
-                Nenhuma ocorrência encontrada com os filtros selecionados
+                {t("map.noIncidents")}
               </p>
             </div>
           </div>

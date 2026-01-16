@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, LoadingSpinner } from "@ogp/ui";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function AdminStats() {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
@@ -23,25 +25,25 @@ export function AdminStats() {
 
   const statCards = [
     {
-      title: "Total de Utilizadores",
+      title: t("admin.totalUsers"),
       value: stats?.data?.totalUsers || 0,
       icon: "👥",
       color: "blue",
     },
     {
-      title: "Ocorrências Abertas",
+      title: t("dashboard.openIncidents"),
       value: stats?.data?.openIncidents || 0,
       icon: "📍",
       color: "yellow",
     },
     {
-      title: "Tickets Ativos",
+      title: t("dashboard.totalTickets"),
       value: stats?.data?.activeTickets || 0,
       icon: "🎫",
       color: "green",
     },
     {
-      title: "Categorias",
+      title: t("admin.totalCategories"),
       value: stats?.data?.totalCategories || 0,
       icon: "📂",
       color: "purple",

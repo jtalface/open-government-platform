@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { requireAdmin } from "@/lib/auth/rbac";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminStats } from "@/components/admin/AdminStats";
+import { PageHeader } from "@/components/PageHeader";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
@@ -21,12 +22,7 @@ export default async function AdminPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Administração</h1>
-          <p className="mt-2 text-gray-600">
-            Gestão do sistema e configurações globais
-          </p>
-        </div>
+        <PageHeader titleKey="admin.title" descriptionKey="admin.overview" />
 
         <AdminStats />
       </div>

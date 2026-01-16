@@ -3,20 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { LanguageSwitcher } from "../LanguageSwitcher";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useTranslation();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: "📊" },
-    { name: "Ocorrências", href: "/dashboard/incidents", icon: "📍" },
-    { name: "Mapa", href: "/dashboard/map", icon: "🗺️" },
-    { name: "Tickets", href: "/dashboard/tickets", icon: "🎫" },
+    { name: t("nav.dashboard"), href: "/dashboard", icon: "📊" },
+    { name: t("nav.incidents"), href: "/dashboard/incidents", icon: "📍" },
+    { name: t("nav.map"), href: "/dashboard/map", icon: "🗺️" },
+    { name: t("nav.tickets"), href: "/dashboard/tickets", icon: "🎫" },
   ];
 
   if (session?.user.role === "ADMIN") {
-    navigation.push({ name: "Admin", href: "/admin", icon: "⚙️" });
+    navigation.push({ name: t("nav.admin"), href: "/admin", icon: "⚙️" });
   }
 
   return (
@@ -47,12 +50,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               <span className="text-sm text-gray-600">{session?.user.name}</span>
               <button
                 onClick={() => signOut()}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
               >
-                Sair
+                {t("nav.signOut")}
               </button>
             </div>
           </div>

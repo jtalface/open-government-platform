@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@ogp/ui";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function DashboardStats() {
+  const { t } = useTranslation();
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: async () => {
@@ -19,25 +21,25 @@ export function DashboardStats() {
 
   const statCards = [
     {
-      label: "Ocorrências Abertas",
+      label: t("dashboard.openIncidents"),
       value: stats?.openIncidents || 0,
       icon: "📍",
       color: "text-blue-600",
     },
     {
-      label: "Tickets Ativos",
+      label: t("dashboard.totalTickets"),
       value: stats?.activeTickets || 0,
       icon: "🎫",
       color: "text-yellow-600",
     },
     {
-      label: "Resolvidos (7 dias)",
+      label: t("dashboard.resolvedIncidents"),
       value: stats?.resolvedThisWeek || 0,
       icon: "✅",
       color: "text-green-600",
     },
     {
-      label: "Tempo Médio",
+      label: t("dashboard.avgResolutionTime"),
       value: stats?.avgResolutionTime || "-",
       icon: "⏱️",
       color: "text-purple-600",

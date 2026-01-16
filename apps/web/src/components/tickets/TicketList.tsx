@@ -3,14 +3,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, Badge, LoadingSpinner } from "@ogp/ui";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS } from "date-fns/locale";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 /**
  * Ticket List Component
  * Displays all tickets with filtering and status updates
  */
 export function TicketList() {
+  const { t, locale } = useTranslation();
   const { data, isLoading, error } = useQuery({
     queryKey: ["tickets"],
     queryFn: async () => {
@@ -33,7 +35,7 @@ export function TicketList() {
   if (error) {
     return (
       <div className="rounded-xl bg-red-50 p-6 text-center">
-        <p className="text-red-600">Erro ao carregar tickets</p>
+        <p className="text-red-600">{t("common.error")}</p>
       </div>
     );
   }
@@ -43,10 +45,12 @@ export function TicketList() {
   if (tickets.length === 0) {
     return (
       <div className="rounded-xl bg-gray-100 p-8 text-center">
-        <p className="text-gray-600">Nenhum ticket encontrado</p>
+        <p className="text-gray-600">{t("tickets.noTickets")}</p>
       </div>
     );
   }
+
+  const dateLocale = locale === "en" ? enUS : ptBR;
 
   return (
     <div className="space-y-4">
@@ -56,10 +60,10 @@ export function TicketList() {
             <div className="flex-1">
               <div className="mb-2 flex items-center gap-2">
                 <Badge variant={getPriorityVariant(ticket.priority)}>
-                  {getPriorityLabel(ticket.priority)}
+                  {getPriorityLabel(ticket.priority, t)}
                 </Badge>
                 <Badge variant={getStatusVariant(ticket.status)}>
-                  {getStatusLabel(ticket.status)}
+                  {getStatusLabel(ticket.status, t)}
                 </Badge>
               </div>
 
@@ -70,16 +74,16 @@ export function TicketList() {
               </p>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span>📂 {ticket.category?.name || "Sem categoria"}</span>
+                <span>📂 {ticket.category?.name || t("common.notAvailable")}</span>
                 {ticket.assignedTo && <span>👤 {ticket.assignedTo.name}</span>}
                 {ticket.incident && (
-                  <span>🔗 Ligado à ocorrência #{ticket.incident.id.slice(0, 8)}</span>
+                  <span>🔗 {t("tickets.linkedIncident")} #{ticket.incident.id.slice(0, 8)}</span>
                 )}
                 <span>
                   🕒{" "}
                   {formatDistanceToNow(new Date(ticket.createdAt), {
                     addSuffix: true,
-                    locale: ptBR,
+                    locale: dateLocale,
                   })}
                 </span>
               </div>

@@ -3,19 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { LanguageSwitcher } from "../LanguageSwitcher";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useTranslation();
 
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: "📊" },
-    { name: "Utilizadores", href: "/admin/users", icon: "👥" },
-    { name: "Categorias", href: "/admin/categories", icon: "📂" },
+    { name: t("nav.dashboard"), href: "/admin", icon: "📊" },
+    { name: t("admin.users"), href: "/admin/users", icon: "👥" },
+    { name: t("admin.categories"), href: "/admin/categories", icon: "📂" },
   ];
 
   const otherLinks = [
-    { name: "← Voltar ao Manager", href: "/dashboard", icon: "🔙" },
+    { name: `← ${t("admin.backToManager")}`, href: "/dashboard", icon: "🔙" },
   ];
 
   return (
@@ -46,6 +49,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               <span className="rounded-full bg-white bg-opacity-20 px-3 py-1 text-xs font-semibold text-white">
                 ADMIN
               </span>
@@ -54,7 +58,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 onClick={() => signOut()}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-white text-opacity-80 hover:bg-white hover:bg-opacity-10"
               >
-                Sair
+                {t("nav.signOut")}
               </button>
             </div>
           </div>
