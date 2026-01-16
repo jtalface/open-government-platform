@@ -1,0 +1,297 @@
+# Open Government Platform (OGP)
+
+A production-grade, mobile-first municipal incident reporting and transparency platform.
+
+## Overview
+
+This platform enables citizens to report municipal incidents, managers to triage and create tickets, and administrators to manage municipality configuration. It features neighborhood-scoped voting, geo-based incident tracking, and public transparency features.
+
+## Architecture
+
+### Tech Stack
+
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, TypeScript
+- **Database**: PostgreSQL + PostGIS
+- **ORM**: Prisma
+- **Auth**: NextAuth.js
+- **Maps**: Mapbox GL
+- **Monorepo**: pnpm workspaces + Turbo
+
+### Monorepo Structure
+
+```
+open-government-platform/
+├── apps/
+│   └── web/              # Next.js web application (PWA)
+├── packages/
+│   ├── database/         # Prisma schema, migrations, seed data
+│   ├── api-client/       # Type-safe API client
+│   ├── ui/               # Shared UI components
+│   └── types/            # Shared TypeScript types
+```
+
+## User Roles
+
+1. **Citizen** - Report incidents, vote on incidents in their neighborhood, view public tickets
+2. **Manager** - Triage incidents, create/manage tickets, post updates
+3. **Administrator** - Manage users, roles, categories, neighborhoods, municipality settings
+
+## Key Features
+
+### Phase 1 (MVP)
+- ✅ Citizen incident reporting with GPS + reverse geocoding
+- ✅ Neighborhood-scoped voting
+- ✅ Importance scoring (neighborhood-weighted + recency)
+- ✅ Mobile-first responsive design
+- ✅ Authentication & RBAC
+
+### Phase 2 (Manager Tools)
+- 🚧 Map-based incident triage
+- 🚧 Ticket management dashboard
+- 🚧 Status tracking & audit logs
+
+### Phase 3 (Transparency)
+- 📋 Public ticket progress pages
+- 📋 Public update timeline
+
+### Phase 4 (Admin Controls)
+- 📋 Role management UI
+- 📋 Category management
+- 📋 Neighborhood configuration
+
+### Phase 5 (Production)
+- 📋 Performance optimization
+- 📋 PWA features
+- 📋 i18n (Portuguese/English)
+
+## 🚀 Getting Started
+
+### Quick Start (5 minutes)
+
+**New here?** Follow our quick start guide:
+
+👉 **[QUICKSTART.md](./QUICKSTART.md)** - Get running in 5 minutes!
+
+### Documentation
+
+We have comprehensive documentation:
+
+| Document | Description |
+|----------|-------------|
+| **[INDEX.md](./INDEX.md)** | 📑 Documentation navigator |
+| **[QUICKSTART.md](./QUICKSTART.md)** | ⚡ 5-minute setup guide |
+| **[SETUP.md](./SETUP.md)** | 🔧 Detailed development guide |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | 🏗️ System design & patterns |
+| **[API.md](./API.md)** | 🔌 API endpoint reference |
+| **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** | ✅ What's built & what's not |
+
+### Prerequisites
+
+- Node.js >= 20.0.0
+- pnpm >= 8.0.0
+- PostgreSQL 15+ with PostGIS extension
+- Mapbox API key (optional for Phase 1)
+
+### One-Command Setup
+
+```bash
+# Run the setup script
+./scripts/setup-dev.sh
+```
+
+Or manually:
+
+```bash
+# 1. Install dependencies
+pnpm install
+
+# 2. Setup environment
+cp apps/web/.env.example apps/web/.env.local
+# Edit .env.local with your credentials
+
+# 3. Initialize database
+createdb ogp_dev
+psql ogp_dev -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+
+# 4. Start development
+pnpm dev
+```
+
+Visit: **http://localhost:3000**
+
+### Test Accounts
+
+After seeding, sign in with:
+
+| Role | Email | Password | Access Level |
+|------|-------|----------|--------------|
+| **Admin** | admin@lisboa.pt | demo123 | Full access |
+| **Manager** | manager@lisboa.pt | demo123 | Dashboard + tickets |
+| **Citizen** | citizen1@example.com | demo123 | Report + vote |
+
+More accounts in [QUICKSTART.md](./QUICKSTART.md)
+
+## Database Schema
+
+### Core Entities
+
+- **Municipality** - Multi-tenant municipality configuration
+- **User** - Users with role-based access (CITIZEN, MANAGER, ADMIN)
+- **Category** - Extensible incident categories per municipality
+- **Neighborhood** - Geographic boundaries (GeoJSON polygons)
+- **IncidentEvent** - Citizen-reported incidents with geo data
+- **Vote** - Neighborhood-scoped votes on incidents
+- **Ticket** - Manager-created work items from incidents
+- **TicketUpdate** - Progress updates (public/internal)
+- **AuditLog** - Audit trail for sensitive actions
+
+## API Design
+
+### Authentication
+- `POST /api/auth/signin` - Sign in
+- `POST /api/auth/signout` - Sign out
+- `POST /api/auth/signup` - Register new user
+
+### Incidents (Citizen)
+- `POST /api/incidents` - Create incident
+- `GET /api/incidents` - List incidents (filtered, nearby)
+- `GET /api/incidents/:id` - Get incident details
+- `POST /api/incidents/:id/vote` - Vote on incident
+- `DELETE /api/incidents/:id/vote` - Remove vote
+
+### Tickets (Manager)
+- `POST /api/tickets` - Create ticket from incident
+- `GET /api/tickets` - List tickets
+- `PATCH /api/tickets/:id` - Update ticket status
+- `POST /api/tickets/:id/updates` - Add progress update
+
+### Admin
+- `POST /api/admin/users/:id/role` - Assign role
+- `POST /api/admin/categories` - Create category
+- `POST /api/admin/neighborhoods` - Create neighborhood
+
+## Development
+
+### Project Commands
+
+```bash
+# Development
+pnpm dev              # Start all apps in dev mode
+pnpm build            # Build all apps
+pnpm lint             # Lint all packages
+pnpm test             # Run tests
+pnpm format           # Format code with Prettier
+
+# Database
+pnpm db:generate      # Generate Prisma client
+pnpm db:migrate       # Run migrations
+pnpm db:push          # Push schema changes (dev only)
+pnpm db:studio        # Open Prisma Studio
+pnpm db:seed          # Seed database
+
+# Cleanup
+pnpm clean            # Clean all build artifacts
+```
+
+### Code Structure
+
+#### Domain Layer
+Pure business logic and entities (`packages/types`)
+
+#### Application Layer
+Use cases and business workflows (`apps/web/src/lib/services`)
+
+#### Infrastructure Layer
+Database, storage, external services (`packages/database`, `apps/web/src/lib/infrastructure`)
+
+#### Presentation Layer
+API routes and UI components (`apps/web/src/app`)
+
+## Security
+
+- Role-based access control (RBAC) enforced at API and UI levels
+- Server-side validation for all mutations
+- Rate limiting on incident creation and voting
+- One vote per incident per user (unique constraint)
+- Neighborhood verification for voting eligibility
+- Audit logging for sensitive operations
+- Data privacy: citizen identity anonymized by default
+
+## Deployment
+
+### Environment Variables
+
+Required:
+- `DATABASE_URL` - PostgreSQL connection string with PostGIS
+- `NEXTAUTH_URL` - Application URL
+- `NEXTAUTH_SECRET` - NextAuth secret
+- `NEXT_PUBLIC_MAPBOX_TOKEN` - Mapbox API token
+
+Optional:
+- `S3_BUCKET` - S3 bucket for media uploads
+- `S3_REGION` - AWS region
+- `AWS_ACCESS_KEY_ID` - AWS credentials
+- `AWS_SECRET_ACCESS_KEY` - AWS credentials
+
+### Production Checklist
+
+- [ ] Enable HTTPS
+- [ ] Configure CORS
+- [ ] Set up CDN for static assets
+- [ ] Configure S3 for media uploads
+- [ ] Enable database connection pooling
+- [ ] Set up monitoring and logging
+- [ ] Configure rate limiting
+- [ ] Enable PWA features
+- [ ] Set up automated backups
+
+## License
+
+MIT
+
+## 📖 Learn More
+
+- **[INDEX.md](./INDEX.md)** - Documentation navigator by role
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Detailed implementation status
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Deep dive into system design
+- **[API.md](./API.md)** - Complete API reference
+
+## 🤝 Contributing
+
+1. Read [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for current status
+2. Pick a TODO item (marked with 🚧 or ❌)
+3. Follow existing code patterns
+4. Update documentation
+5. Test thoroughly with all roles
+
+## 🐛 Troubleshooting
+
+Having issues? Check:
+1. [QUICKSTART.md](./QUICKSTART.md#troubleshooting) - Common issues
+2. [SETUP.md](./SETUP.md#troubleshooting) - Detailed debugging
+3. Verify PostgreSQL is running: `pg_ctl status`
+4. Check PostGIS is enabled: `psql ogp_dev -c "SELECT PostGIS_version();"`
+
+## 📊 Project Status
+
+**Phase 0 & 1**: ✅ **COMPLETE**
+- Full citizen incident workflow
+- Authentication & RBAC
+- Voting with neighborhood constraints
+- Importance scoring algorithm
+
+**Phase 2**: 🚧 **SCAFFOLDED**
+- Manager dashboard structure ready
+- Ticket management UI scaffolded
+- APIs need implementation
+
+See [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for details.
+
+## Support
+
+Questions? Check our comprehensive documentation starting with [INDEX.md](./INDEX.md)!
+

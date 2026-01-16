@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+}
+
+/* Mapbox overrides */
+.mapboxgl-ctrl-group {
+  @apply rounded-lg shadow-lg;
+}
+
+.mapboxgl-popup-content {
+  @apply rounded-lg shadow-xl;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  @apply rounded-xl;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg shadow-xl;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none;
+}
+
+.leaflet-control-zoom {
+  @apply rounded-lg shadow-lg border border-gray-300;
+}
+
+.leaflet-control-zoom a {
+  @apply text-gray-700;
+}
+
+.leaflet-control-zoom a:hover {
+  @apply bg-blue-50 text-blue-600;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  background: none !important;
+  border: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+

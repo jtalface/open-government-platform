@@ -1,0 +1,362 @@
+// Prisma schema for Open Government Platform
+// Uses PostgreSQL with PostGIS extension for geospatial features
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// ===========================================
+// ENUMS
+// ===========================================
+
+enum UserRole {
+  CITIZEN
+  MANAGER
+  ADMIN
+}
+
+enum IncidentStatus {
+  OPEN
+  TRIAGED
+  TICKETED
+  RESOLVED
+  CLOSED
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum UpdateVisibility {
+  PUBLIC
+  INTERNAL
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  ROLE_CHANGE
+  STATUS_CHANGE
+  VISIBILITY_CHANGE
+}
+
+// ===========================================
+// MODELS
+// ===========================================
+
+model Municipality {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  settings  Json     @default("{}")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users         User[]
+  categories    Category[]
+  neighborhoods Neighborhood[]
+  incidents     IncidentEvent[]
+  tickets       Ticket[]
+  votes         Vote[]
+  auditLogs     AuditLog[]
+
+  @@index([slug])
+  @@index([active])
+  @@map("municipalities")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  name           String
+  phone          String?
+  password       String // hashed
+  role           UserRole  @default(CITIZEN)
+  municipalityId String
+  neighborhoodId String?
+  location       Json? // { lat, lng }
+  image          String?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  municipality      Municipality    @relation(fields: [municipalityId], references: [id])
+  neighborhood      Neighborhood?   @relation(fields: [neighborhoodId], references: [id])
+  incidents         IncidentEvent[]
+  votes             Vote[]
+  createdTickets    Ticket[]        @relation("CreatedTickets")
+  assignedTickets   Ticket[]        @relation("AssignedTickets")
+  ticketUpdates     TicketUpdate[]
+  auditLogs         AuditLog[]
+  accounts          Account[]
+  sessions          Session[]
+
+  @@index([email])
+  @@index([municipalityId])
+  @@index([neighborhoodId])
+  @@index([role])
+  @@index([active])
+  @@map("users")
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Category {
+  id             String   @id @default(uuid())
+  municipalityId String
+  name           String
+  slug           String
+  icon           String // Icon identifier (e.g., "health", "construction")
+  color          String // Hex color
+  description    String?
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  municipality Municipality    @relation(fields: [municipalityId], references: [id])
+  incidents    IncidentEvent[]
+  tickets      Ticket[]
+
+  @@unique([municipalityId, slug])
+  @@index([municipalityId])
+  @@index([active])
+  @@map("categories")
+}
+
+model Neighborhood {
+  id             String                         @id @default(uuid())
+  municipalityId String
+  name           String
+  slug           String
+  // PostGIS geometry field for polygon/multipolygon
+  geometry       Unsupported("geometry(GEOMETRY, 4326)")
+  metadata       Json?
+  active         Boolean                        @default(true)
+  createdAt      DateTime                       @default(now())
+  updatedAt      DateTime                       @updatedAt
+
+  // Relations
+  municipality Municipality    @relation(fields: [municipalityId], references: [id])
+  users        User[]
+  incidents    IncidentEvent[]
+  votes        Vote[]
+
+  @@unique([municipalityId, slug])
+  @@index([municipalityId])
+  @@index([active])
+  @@map("neighborhoods")
+}
+
+model IncidentEvent {
+  id               String         @id @default(uuid())
+  municipalityId   String
+  categoryId       String
+  title            String
+  description      String         @db.Text
+  // PostGIS point field for location
+  location         Unsupported("geometry(POINT, 4326)")
+  lat              Float // Denormalized for easier queries
+  lng              Float // Denormalized for easier queries
+  geohash          String
+  neighborhoodId   String?
+  address          String?
+  status           IncidentStatus @default(OPEN)
+  createdByUserId  String
+  media            Json           @default("[]") // Array of Media objects
+  voteStats        Json           @default("{}") // Aggregated vote statistics
+  importanceScore  Float          @default(0)
+  ticketId         String?        @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Relations
+  municipality Municipality  @relation(fields: [municipalityId], references: [id])
+  category     Category      @relation(fields: [categoryId], references: [id])
+  createdBy    User          @relation(fields: [createdByUserId], references: [id])
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  ticket       Ticket?
+  votes        Vote[]
+
+  @@index([municipalityId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([neighborhoodId])
+  @@index([createdByUserId])
+  @@index([geohash])
+  @@index([importanceScore(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("incident_events")
+}
+
+model Vote {
+  id             String   @id @default(uuid())
+  incidentId     String
+  userId         String
+  municipalityId String
+  neighborhoodId String?
+  value          Int // 1 or -1
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  incident     IncidentEvent @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  municipality Municipality  @relation(fields: [municipalityId], references: [id])
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id])
+
+  @@unique([incidentId, userId]) // One vote per user per incident
+  @@index([incidentId])
+  @@index([userId])
+  @@index([municipalityId])
+  @@index([neighborhoodId])
+  @@map("votes")
+}
+
+model Ticket {
+  id               String           @id @default(uuid())
+  municipalityId   String
+  incidentId       String?          @unique
+  categoryId       String
+  title            String
+  description      String           @db.Text
+  status           TicketStatus     @default(NEW)
+  priority         TicketPriority   @default(MEDIUM)
+  createdByUserId  String
+  assignedToUserId String?
+  publicVisibility UpdateVisibility @default(INTERNAL)
+  sla              Json? // { dueDate, estimatedHours }
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  municipality Municipality   @relation(fields: [municipalityId], references: [id])
+  incident     IncidentEvent? @relation(fields: [incidentId], references: [id])
+  category     Category       @relation(fields: [categoryId], references: [id])
+  createdBy    User           @relation("CreatedTickets", fields: [createdByUserId], references: [id])
+  assignedTo   User?          @relation("AssignedTickets", fields: [assignedToUserId], references: [id])
+  updates      TicketUpdate[]
+
+  @@index([municipalityId])
+  @@index([incidentId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([publicVisibility])
+  @@map("tickets")
+}
+
+model TicketUpdate {
+  id          String           @id @default(uuid())
+  ticketId    String
+  authorUserId String
+  visibility  UpdateVisibility
+  message     String           @db.Text
+  attachments Json             @default("[]") // Array of Media objects
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorUserId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorUserId])
+  @@index([visibility])
+  @@index([createdAt(sort: Desc)])
+  @@map("ticket_updates")
+}
+
+model AuditLog {
+  id             String      @id @default(uuid())
+  municipalityId String
+  actorUserId    String
+  entityType     String // e.g., "User", "Ticket", "IncidentEvent"
+  entityId       String
+  action         AuditAction
+  metadata       Json        @default("{}")
+  createdAt      DateTime    @default(now())
+
+  // Relations
+  municipality Municipality @relation(fields: [municipalityId], references: [id])
+  actor        User         @relation(fields: [actorUserId], references: [id])
+
+  @@index([municipalityId])
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+

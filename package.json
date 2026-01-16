@@ -1,0 +1,35 @@
+{
+  "name": "open-government-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Municipal incident reporting and transparency platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "pnpm --filter @ogp/database generate",
+    "db:migrate": "pnpm --filter @ogp/database migrate",
+    "db:push": "pnpm --filter @ogp/database push",
+    "db:studio": "pnpm --filter @ogp/database studio",
+    "db:seed": "pnpm --filter @ogp/database seed",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.0.0",
+    "turbo": "^2.0.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.11",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
