@@ -24,12 +24,16 @@
     "notAvailable": "N/A",
     "unknown": "Unknown",
     "votes": "votes",
+    "publish": "Publish",
+    "postingAs": "Posting as",
     "noCategory": "No category"
   },
   "nav": {
     "dashboard": "Dashboard",
     "incidents": "Incidents",
+    "incidentsList": "Incidents",
     "map": "Map",
+    "channels": "Official Channels",
     "tickets": "Tickets",
     "admin": "Admin",
     "signOut": "Sign Out",
@@ -169,6 +173,25 @@
     "traffic": "Traffic",
     "lighting": "Lighting",
     "environment": "Environment"
+  },
+  "channels": {
+    "title": "Official Channels",
+    "description": "Follow updates from municipal officials",
+    "verified": "Verified",
+    "viewChannel": "View Channel",
+    "noChannelsTitle": "No channels available",
+    "noChannelsDescription": "There are no official channels available at this time.",
+    "errorLoading": "Error loading channels",
+    "channelNotFound": "Channel not found",
+    "updates": "Updates",
+    "noPostsYet": "No updates yet on this channel",
+    "postTitle": "Title",
+    "postBody": "Message",
+    "attachments": "Attachments",
+    "createPost": "Post on Channel",
+    "selectChannel": "Select Channel",
+    "postSuccess": "Post created successfully",
+    "postError": "Error creating post"
   }
 }
 

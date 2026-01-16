@@ -12,18 +12,23 @@ export default async function IncidentsPage() {
     redirect("/auth/signin");
   }
 
-  const showDashboard = session.user.role === "MANAGER" || session.user.role === "ADMIN";
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <CitizenHeader 
-        userName={session.user.name || ""} 
-        showDashboard={showDashboard}
-        showCreateButton={true}
-      />
+      <CitizenHeader session={session} activeTab="incidents" />
 
       {/* Content */}
       <main className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Ocorrências</h1>
+          </div>
+          <a
+            href="/incidents/new"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+          >
+            + Criar Ocorrência
+          </a>
+        </div>
         <IncidentFilters />
         <IncidentList />
       </main>

@@ -6,14 +6,15 @@ import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface CitizenHeaderProps {
-  userName: string;
-  showDashboard?: boolean;
-  showCreateButton?: boolean;
+  session: any;
+  activeTab?: "incidents" | "map" | "channels";
 }
 
-export function CitizenHeader({ userName, showDashboard, showCreateButton }: CitizenHeaderProps) {
+export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
+
+  const showDashboard = session.user.role === "MANAGER" || session.user.role === "ADMIN";
 
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white shadow-sm">
@@ -27,37 +28,39 @@ export function CitizenHeader({ userName, showDashboard, showCreateButton }: Cit
               <Link
                 href="/incidents"
                 className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                  pathname === "/incidents"
+                  activeTab === "incidents" || pathname === "/incidents"
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                📋 {t("incidents.list")}
+                📋 {t("nav.incidentsList")}
               </Link>
               <Link
                 href="/map"
                 className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                  pathname === "/map"
+                  activeTab === "map" || pathname === "/map"
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                🗺️ {t("incidents.map")}
+                🗺️ {t("nav.map")}
+              </Link>
+              <Link
+                href="/channels"
+                className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                  activeTab === "channels" || pathname.startsWith("/channels")
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                📢 {t("nav.channels")}
               </Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            {showCreateButton && (
-              <Link
-                href="/incidents/new"
-                className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
-              >
-                + {t("incidents.create")}
-              </Link>
-            )}
-            <span className="text-sm text-gray-600">{userName}</span>
+            <span className="text-sm text-gray-600">{session.user.name}</span>
             {showDashboard && (
               <Link
                 href="/dashboard"

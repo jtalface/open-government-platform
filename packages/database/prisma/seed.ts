@@ -295,6 +295,105 @@ async function main() {
 
   console.log("✓ Created 3 sample incidents");
 
+  // Create Official Channels
+  const mayorChannel = await prisma.officialChannel.create({
+    data: {
+      municipalityId: lisbon.id,
+      name: "Maria Santos",
+      title: "Mayor of Lisboa",
+      bio: "Dedicated to making Lisboa a better place for all citizens. Committed to transparency and citizen engagement.",
+      isActive: true,
+    },
+  });
+
+  const publicWorksChannel = await prisma.officialChannel.create({
+    data: {
+      municipalityId: lisbon.id,
+      name: "Eng. Paulo Mbele",
+      title: "Director of Public Works",
+      bio: "Managing infrastructure projects and public works across the municipality.",
+      isActive: true,
+    },
+  });
+
+  const publicHealthChannel = await prisma.officialChannel.create({
+    data: {
+      municipalityId: lisbon.id,
+      name: "Dr. Amina Ndlovu",
+      title: "Public Health Officer",
+      bio: "Overseeing public health initiatives and community wellness programs.",
+      isActive: true,
+    },
+  });
+
+  console.log("✓ Created 3 official channels");
+
+  // Grant channel permissions to manager and admin
+  await prisma.channelPermission.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: mayorChannel.id,
+      userId: admin.id,
+      roleGrantedByUserId: admin.id,
+    },
+  });
+
+  await prisma.channelPermission.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: publicWorksChannel.id,
+      userId: manager.id,
+      roleGrantedByUserId: admin.id,
+    },
+  });
+
+  await prisma.channelPermission.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: publicHealthChannel.id,
+      userId: admin.id,
+      roleGrantedByUserId: admin.id,
+    },
+  });
+
+  console.log("✓ Granted channel permissions");
+
+  // Create sample channel posts
+  await prisma.channelPost.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: mayorChannel.id,
+      authorUserId: admin.id,
+      title: "Welcome to Our New Citizen Engagement Platform",
+      body: "I'm excited to announce the launch of our new digital platform for citizen engagement. This platform will help us stay connected with you and address community concerns more efficiently. Together, we can make Lisboa an even better place to live!",
+      visibility: "PUBLIC",
+    },
+  });
+
+  await prisma.channelPost.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: publicWorksChannel.id,
+      authorUserId: manager.id,
+      title: "Road Maintenance Schedule - March 2026",
+      body: "We will be conducting routine road maintenance in the Alfama and Belém neighborhoods starting next week. Please expect minor delays and follow detour signs. Thank you for your patience as we improve our infrastructure.",
+      visibility: "PUBLIC",
+    },
+  });
+
+  await prisma.channelPost.create({
+    data: {
+      municipalityId: lisbon.id,
+      channelId: publicHealthChannel.id,
+      authorUserId: admin.id,
+      title: "Free Health Screenings This Weekend",
+      body: "Join us this Saturday and Sunday for free health screenings at the community center. Services include blood pressure checks, diabetes screening, and general health consultations. Open to all residents.",
+      visibility: "PUBLIC",
+    },
+  });
+
+  console.log("✓ Created 3 sample channel posts");
+
   console.log("✅ Database seeded successfully!");
   console.log("\n📋 Test Accounts:");
   console.log("   Admin:   admin@lisboa.pt / demo123");

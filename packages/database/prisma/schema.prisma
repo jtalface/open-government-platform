@@ -63,6 +63,19 @@ enum AuditAction {
   ROLE_CHANGE
   STATUS_CHANGE
   VISIBILITY_CHANGE
+  CHANNEL_CREATED
+  CHANNEL_UPDATED
+  CHANNEL_DEACTIVATED
+  CHANNEL_PERMISSION_GRANTED
+  CHANNEL_PERMISSION_REVOKED
+  CHANNEL_POST_CREATED
+  CHANNEL_POST_UPDATED
+  CHANNEL_POST_DELETED
+}
+
+enum PostVisibility {
+  PUBLIC
+  DRAFT
 }
 
 // ===========================================
@@ -79,13 +92,15 @@ model Municipality {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users         User[]
-  categories    Category[]
-  neighborhoods Neighborhood[]
-  incidents     IncidentEvent[]
-  tickets       Ticket[]
-  votes         Vote[]
-  auditLogs     AuditLog[]
+  users            User[]
+  categories       Category[]
+  neighborhoods    Neighborhood[]
+  incidents        IncidentEvent[]
+  tickets          Ticket[]
+  votes            Vote[]
+  auditLogs        AuditLog[]
+  officialChannels OfficialChannel[]
+  channelPosts     ChannelPost[]
 
   @@index([slug])
   @@index([active])
@@ -109,16 +124,18 @@ model User {
   updatedAt      DateTime  @updatedAt
 
   // Relations
-  municipality      Municipality    @relation(fields: [municipalityId], references: [id])
-  neighborhood      Neighborhood?   @relation(fields: [neighborhoodId], references: [id])
-  incidents         IncidentEvent[]
-  votes             Vote[]
-  createdTickets    Ticket[]        @relation("CreatedTickets")
-  assignedTickets   Ticket[]        @relation("AssignedTickets")
-  ticketUpdates     TicketUpdate[]
-  auditLogs         AuditLog[]
-  accounts          Account[]
-  sessions          Session[]
+  municipality       Municipality        @relation(fields: [municipalityId], references: [id])
+  neighborhood       Neighborhood?       @relation(fields: [neighborhoodId], references: [id])
+  incidents          IncidentEvent[]
+  votes              Vote[]
+  createdTickets     Ticket[]            @relation("CreatedTickets")
+  assignedTickets    Ticket[]            @relation("AssignedTickets")
+  ticketUpdates      TicketUpdate[]
+  auditLogs          AuditLog[]
+  accounts           Account[]
+  sessions           Session[]
+  channelPermissions ChannelPermission[]
+  channelPosts       ChannelPost[]
 
   @@index([email])
   @@index([municipalityId])
@@ -360,3 +377,75 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+
+// ===========================================
+// OFFICIAL CHANNELS MODELS
+// ===========================================
+
+model OfficialChannel {
+  id             String   @id @default(uuid())
+  municipalityId String
+  name           String // e.g., "Maria Santos"
+  title          String // e.g., "Mayor"
+  avatarUrl      String?
+  bio            String?  @db.Text
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  municipality Municipality        @relation(fields: [municipalityId], references: [id])
+  permissions  ChannelPermission[]
+  posts        ChannelPost[]
+
+  @@index([municipalityId])
+  @@index([isActive])
+  @@map("official_channels")
+}
+
+model ChannelPermission {
+  id                   String   @id @default(uuid())
+  municipalityId       String
+  channelId            String
+  userId               String
+  roleGrantedByUserId  String // Admin who granted this permission
+  createdAt            DateTime @default(now())
+
+  // Relations
+  channel OfficialChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([municipalityId])
+  @@index([channelId])
+  @@index([userId])
+  @@map("channel_permissions")
+}
+
+model ChannelPost {
+  id             String         @id @default(uuid())
+  municipalityId String
+  channelId      String
+  authorUserId   String
+  title          String
+  body           String         @db.Text
+  attachments    Json           @default("[]") // Array of { url, type, uploadedAt }
+  visibility     PostVisibility @default(PUBLIC)
+  publishedAt    DateTime       @default(now())
+  deletedAt      DateTime? // Soft delete
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  municipality Municipality    @relation(fields: [municipalityId], references: [id])
+  channel      OfficialChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author       User            @relation(fields: [authorUserId], references: [id])
+
+  @@index([municipalityId])
+  @@index([channelId])
+  @@index([authorUserId])
+  @@index([visibility])
+  @@index([publishedAt(sort: Desc)])
+  @@index([deletedAt])
+  @@map("channel_posts")
+}

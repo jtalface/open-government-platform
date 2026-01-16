@@ -25,11 +25,9 @@ export default async function MapPage() {
     redirect("/auth/signin");
   }
 
-  const showDashboard = session.user.role === "MANAGER" || session.user.role === "ADMIN";
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <CitizenHeader userName={session.user.name || ""} showDashboard={showDashboard} />
+      <CitizenHeader session={session} activeTab="map" />
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8">

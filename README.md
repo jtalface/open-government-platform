@@ -295,3 +295,108 @@ See [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for details.
 
 Questions? Check our comprehensive documentation starting with [INDEX.md](./INDEX.md)!
 
+
+## 📢 Official Channels Feature
+
+The Official Channels feature enables municipality officials to communicate directly with citizens through official channels.
+
+### Overview
+
+- **Citizens** can browse official channels and view posts from municipal officials
+- **Managers/Admins** can publish posts to channels they have permission for
+- **Admins** can create/manage channels and grant posting permissions
+
+### Key Features
+
+1. **Channel Management (Admin)**
+   - Create official channels for municipal officials
+   - Edit channel information (name, title, bio, avatar)
+   - Activate/deactivate channels
+   - Grant/revoke posting permissions to managers
+
+2. **Post Creation (Manager/Admin)**
+   - "Post on my channel" button in dashboard
+   - Rich text posts with optional attachments
+   - Public visibility by default
+   - Automatic audit logging
+
+3. **Citizen View**
+   - Browse all active channels in their municipality
+   - View channel feeds with reverse chronological posts
+   - Verified badge for official channels
+   - Mobile-first, responsive design
+
+### Access Control (RBAC)
+
+- **Citizen**: Can only view channels and posts (read-only)
+- **Manager**: Can post to channels they have explicit permission for
+- **Admin**: Can post to any channel + manage all channels and permissions
+
+All permissions are scoped to the user's municipality.
+
+### API Endpoints
+
+**Citizen (Read)**
+- `GET /api/channels` - List all active channels
+- `GET /api/channels/:channelId/posts` - Get paginated posts for a channel
+
+**Manager/Admin (Write)**
+- `POST /api/channels/:channelId/posts` - Create a new post
+- `PATCH /api/channel-posts/:postId` - Update a post (author or admin only)
+- `DELETE /api/channel-posts/:postId` - Soft delete a post (author or admin only)
+- `GET /api/my-channels` - Get channels user can post to
+
+**Admin Only**
+- `GET /api/admin/channels` - List all channels (including inactive)
+- `POST /api/admin/channels` - Create a new channel
+- `PATCH /api/admin/channels/:channelId` - Update channel
+- `GET /api/admin/channels/:channelId/permissions` - List permissions
+- `POST /api/admin/channels/:channelId/permissions` - Grant permission
+- `DELETE /api/admin/channels/:channelId/permissions?userId=X` - Revoke permission
+
+### Database Schema
+
+**OfficialChannel**
+- Municipality-scoped official channels
+- Contains: name, title, bio, avatarUrl, isActive
+
+**ChannelPermission**
+- Many-to-many mapping of users to channels
+- Tracks who granted the permission
+- Unique constraint on (channelId, userId)
+
+**ChannelPost**
+- Posts published to channels
+- Supports attachments (JSON array)
+- Soft delete with deletedAt field
+- Visibility: PUBLIC or DRAFT
+
+### Audit Logging
+
+All channel operations are logged:
+- `CHANNEL_CREATED`, `CHANNEL_UPDATED`, `CHANNEL_DEACTIVATED`
+- `CHANNEL_PERMISSION_GRANTED`, `CHANNEL_PERMISSION_REVOKED`
+- `CHANNEL_POST_CREATED`, `CHANNEL_POST_UPDATED`, `CHANNEL_POST_DELETED`
+
+### Testing
+
+Run channel tests:
+```bash
+pnpm test src/__tests__/channels/
+```
+
+Tests cover:
+- Authorization (canPostToChannel, canManagePost)
+- RBAC rules (admin, manager, citizen permissions)
+- Cross-municipality isolation
+- Audit logging
+
+### Seed Data
+
+The seed script creates 3 sample channels per municipality:
+1. Mayor - "Maria Santos"
+2. Director of Public Works - "Eng. Paulo Mbele"
+3. Public Health Officer - "Dr. Amina Ndlovu"
+
+Each channel has sample posts and permissions are granted to the admin and manager users.
+

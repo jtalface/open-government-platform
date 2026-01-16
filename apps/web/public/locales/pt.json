@@ -24,12 +24,16 @@
     "notAvailable": "N/D",
     "unknown": "Desconhecido",
     "votes": "votos",
+    "publish": "Publicar",
+    "postingAs": "Publicando como",
     "noCategory": "Sem categoria"
   },
   "nav": {
     "dashboard": "Dashboard",
     "incidents": "Ocorrências",
+    "incidentsList": "Ocorrências",
     "map": "Mapa",
+    "channels": "Canais Oficiais",
     "tickets": "Tickets",
     "admin": "Admin",
     "signOut": "Sair",
@@ -169,6 +173,25 @@
     "traffic": "Trânsito",
     "lighting": "Iluminação",
     "environment": "Meio Ambiente"
+  },
+  "channels": {
+    "title": "Canais Oficiais",
+    "description": "Acompanhe as atualizações dos responsáveis municipais",
+    "verified": "Verificado",
+    "viewChannel": "Ver Canal",
+    "noChannelsTitle": "Nenhum canal disponível",
+    "noChannelsDescription": "Não há canais oficiais disponíveis no momento.",
+    "errorLoading": "Erro ao carregar canais",
+    "channelNotFound": "Canal não encontrado",
+    "updates": "Atualizações",
+    "noPostsYet": "Ainda não há atualizações neste canal",
+    "postTitle": "Título",
+    "postBody": "Mensagem",
+    "attachments": "Anexos",
+    "createPost": "Publicar no Canal",
+    "selectChannel": "Selecionar Canal",
+    "postSuccess": "Publicação criada com sucesso",
+    "postError": "Erro ao criar publicação"
   }
 }
 
