@@ -4,5 +4,6 @@ export * from "./components/Card";
 export * from "./components/Badge";
 export * from "./components/LoadingSpinner";
 export * from "./components/Avatar";
+export * from "./components/Modal";
 export * from "./lib/utils";
 

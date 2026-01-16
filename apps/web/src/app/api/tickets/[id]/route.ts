@@ -69,6 +69,13 @@ export async function GET(
             },
           },
         },
+        project: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+          },
+        },
       },
     });
 
