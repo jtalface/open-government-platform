@@ -361,6 +361,9 @@ function getStatusLabel(status: string, t: (key: string) => string): string {
 function translateCategory(categoryName: string, t: (key: string) => string): string {
   const categoryMap: Record<string, string> = {
     "Saúde Pública": t("categories.publicHealth"),
+    "Obras Públicas e Habitação": t("categories.publicWorks"),
+    "Segurança Pública": t("categories.publicSafety"),
+    "Eventos": t("categories.events"),
     "Infraestrutura": t("categories.infrastructure"),
     "Segurança": t("categories.safety"),
     "Limpeza": t("categories.cleaning"),

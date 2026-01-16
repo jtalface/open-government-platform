@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function IncidentFilters() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -28,6 +30,23 @@ export function IncidentFilters() {
     router.push(`/incidents?${params.toString()}`);
   };
 
+  const translateCategory = (categoryName: string): string => {
+    const categoryMap: Record<string, string> = {
+      "Saúde Pública": t("categories.publicHealth"),
+      "Obras Públicas e Habitação": t("categories.publicWorks"),
+      "Segurança Pública": t("categories.publicSafety"),
+      "Eventos": t("categories.events"),
+      "Infraestrutura": t("categories.infrastructure"),
+      "Segurança": t("categories.safety"),
+      "Limpeza": t("categories.cleaning"),
+      "Trânsito": t("categories.traffic"),
+      "Iluminação": t("categories.lighting"),
+      "Meio Ambiente": t("categories.environment"),
+    };
+    
+    return categoryMap[categoryName] || categoryName;
+  };
+
   return (
     <div className="mb-6">
       <div className="flex gap-2 overflow-x-auto pb-2">
@@ -39,7 +58,7 @@ export function IncidentFilters() {
               : "bg-white text-gray-700 hover:bg-gray-100"
           }`}
         >
-          Todas
+          {t("common.all")}
         </button>
         {categories?.map((category: any) => (
           <button
@@ -51,11 +70,10 @@ export function IncidentFilters() {
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
-            {category.name}
+            {translateCategory(category.name)}
           </button>
         ))}
       </div>
     </div>
   );
 }
-

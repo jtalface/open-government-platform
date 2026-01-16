@@ -74,7 +74,7 @@ export function TicketList() {
               </p>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span>📂 {ticket.category?.name || t("common.notAvailable")}</span>
+                <span>📂 {ticket.category?.name ? translateCategory(ticket.category.name, t) : t("common.notAvailable")}</span>
                 {ticket.assignedTo && <span>👤 {ticket.assignedTo.name}</span>}
                 {ticket.incident && (
                   <span>🔗 {t("tickets.linkedIncident")} #{ticket.incident.id.slice(0, 8)}</span>
@@ -153,3 +153,20 @@ function getStatusVariant(status: string): "success" | "warning" | "error" | "in
   return variants[status] || "info";
 }
 
+
+function translateCategory(categoryName: string, t: (key: string) => string): string {
+  const categoryMap: Record<string, string> = {
+    "Saúde Pública": t("categories.publicHealth"),
+    "Obras Públicas e Habitação": t("categories.publicWorks"),
+    "Segurança Pública": t("categories.publicSafety"),
+    "Eventos": t("categories.events"),
+    "Infraestrutura": t("categories.infrastructure"),
+    "Segurança": t("categories.safety"),
+    "Limpeza": t("categories.cleaning"),
+    "Trânsito": t("categories.traffic"),
+    "Iluminação": t("categories.lighting"),
+    "Meio Ambiente": t("categories.environment"),
+  };
+  
+  return categoryMap[categoryName] || categoryName;
+}

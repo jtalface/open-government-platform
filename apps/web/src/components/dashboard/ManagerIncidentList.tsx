@@ -67,7 +67,7 @@ export function ManagerIncidentList() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="mb-2 flex items-center gap-2">
-                  <Badge variant="info">{incident.category.name}</Badge>
+                  <Badge variant="info">{translateCategory(incident.category.name, t)}</Badge>
                   <Badge variant={getStatusVariant(incident.status)}>
                     {getStatusLabel(incident.status, t)}
                   </Badge>
@@ -179,4 +179,21 @@ function getStatusLabel(status: string, t: (key: string) => string): string {
     default:
       return status;
   }
+}
+
+function translateCategory(categoryName: string, t: (key: string) => string): string {
+  const categoryMap: Record<string, string> = {
+    "Saúde Pública": t("categories.publicHealth"),
+    "Obras Públicas e Habitação": t("categories.publicWorks"),
+    "Segurança Pública": t("categories.publicSafety"),
+    "Eventos": t("categories.events"),
+    "Infraestrutura": t("categories.infrastructure"),
+    "Segurança": t("categories.safety"),
+    "Limpeza": t("categories.cleaning"),
+    "Trânsito": t("categories.traffic"),
+    "Iluminação": t("categories.lighting"),
+    "Meio Ambiente": t("categories.environment"),
+  };
+  
+  return categoryMap[categoryName] || categoryName;
 }

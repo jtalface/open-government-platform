@@ -40,6 +40,23 @@ export function ManagerIncidentFilters() {
     { value: "CLOSED", label: t("incidents.status_closed") },
   ];
 
+  const translateCategory = (categoryName: string): string => {
+    const categoryMap: Record<string, string> = {
+      "Saúde Pública": t("categories.publicHealth"),
+      "Obras Públicas e Habitação": t("categories.publicWorks"),
+      "Segurança Pública": t("categories.publicSafety"),
+      "Eventos": t("categories.events"),
+      "Infraestrutura": t("categories.infrastructure"),
+      "Segurança": t("categories.safety"),
+      "Limpeza": t("categories.cleaning"),
+      "Trânsito": t("categories.traffic"),
+      "Iluminação": t("categories.lighting"),
+      "Meio Ambiente": t("categories.environment"),
+    };
+    
+    return categoryMap[categoryName] || categoryName;
+  };
+
   return (
     <div className="rounded-xl bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("incidents.filters")}</h2>
@@ -56,7 +73,7 @@ export function ManagerIncidentFilters() {
             <option value="">{t("incidents.allCategories")}</option>
             {categories?.map((cat: any) => (
               <option key={cat.id} value={cat.id}>
-                {cat.name}
+                {translateCategory(cat.name)}
               </option>
             ))}
           </select>
@@ -80,10 +97,10 @@ export function ManagerIncidentFilters() {
 
         {/* Search */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Buscar</label>
+          <label className="mb-2 block text-sm font-medium text-gray-700">{t("common.search")}</label>
           <input
             type="text"
-            placeholder="Título ou descrição..."
+            placeholder={t("common.searchPlaceholder")}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onChange={(e) => {
               const value = e.target.value;
@@ -101,4 +118,3 @@ export function ManagerIncidentFilters() {
     </div>
   );
 }
-

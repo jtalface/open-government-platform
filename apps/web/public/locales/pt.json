@@ -160,6 +160,9 @@
   },
   "categories": {
     "publicHealth": "Saúde Pública",
+    "publicWorks": "Obras Públicas e Habitação",
+    "publicSafety": "Segurança Pública",
+    "events": "Eventos",
     "infrastructure": "Infraestrutura",
     "safety": "Segurança",
     "cleaning": "Limpeza",

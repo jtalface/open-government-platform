@@ -160,6 +160,9 @@
   },
   "categories": {
     "publicHealth": "Public Health",
+    "publicWorks": "Public Works and Housing",
+    "publicSafety": "Public Safety",
+    "events": "Events",
     "infrastructure": "Infrastructure",
     "safety": "Safety",
     "cleaning": "Cleaning",
