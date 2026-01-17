@@ -8,6 +8,8 @@ async function main() {
 
   // Clean existing data (in correct order to respect foreign keys)
   await prisma.auditLog.deleteMany();
+  await prisma.pollVote.deleteMany();
+  await prisma.poll.deleteMany();
   await prisma.projectUpdate.deleteMany();
   await prisma.project.deleteMany();
   await prisma.ticketUpdate.deleteMany();
@@ -549,6 +551,45 @@ async function main() {
   });
 
   console.log("✓ Created project updates");
+
+  // Create sample poll
+  const activePoll = await prisma.poll.create({
+    data: {
+      municipalityId: lisbon.id,
+      createdByUserId: manager.id,
+      title: "Should the municipality prioritize pothole repairs this month?",
+      optionA: "Yes, absolutely",
+      optionB: "No, focus on other issues",
+      status: "ACTIVE",
+      startsAt: new Date(),
+    },
+  });
+
+  // Add some sample votes
+  await prisma.pollVote.createMany({
+    data: [
+      {
+        municipalityId: lisbon.id,
+        pollId: activePoll.id,
+        userId: citizen1.id,
+        choice: "A",
+      },
+      {
+        municipalityId: lisbon.id,
+        pollId: activePoll.id,
+        userId: citizen2.id,
+        choice: "A",
+      },
+      {
+        municipalityId: lisbon.id,
+        pollId: activePoll.id,
+        userId: citizen3.id,
+        choice: "B",
+      },
+    ],
+  });
+
+  console.log("✓ Created active poll with sample votes");
 
   console.log("✅ Database seeded successfully!");
   console.log("\n📋 Test Accounts:");

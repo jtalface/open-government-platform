@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { IncidentList } from "@/components/incidents/IncidentList";
 import { IncidentFilters } from "@/components/incidents/IncidentFilters";
 import { CitizenHeader } from "@/components/CitizenHeader";
+import { PollBanner } from "@/components/polls/PollBanner";
 
 export default async function IncidentsPage() {
   const session = await getServerSession(authOptions);
@@ -18,6 +19,9 @@ export default async function IncidentsPage() {
 
       {/* Content */}
       <main className="mx-auto max-w-7xl px-4 py-6">
+        {/* Poll Banner */}
+        <PollBanner municipalityId={session.user.municipalityId} />
+
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Ocorrências</h1>

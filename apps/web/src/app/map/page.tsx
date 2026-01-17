@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth-options";
 import { CitizenHeader } from "@/components/CitizenHeader";
 import { PageHeader } from "@/components/PageHeader";
+import { PollBanner } from "@/components/polls/PollBanner";
 import dynamic from "next/dynamic";
 
 // Import IncidentMap with SSR disabled (Leaflet requires browser environment)
@@ -31,6 +32,9 @@ export default async function MapPage() {
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8">
+        {/* Poll Banner */}
+        <PollBanner municipalityId={session.user.municipalityId} />
+
         <div className="mb-6">
           <PageHeader titleKey="map.title" descriptionKey="map.description" />
         </div>

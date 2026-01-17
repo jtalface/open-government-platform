@@ -477,3 +477,140 @@ The seed script creates 3 sample channels per municipality:
 
 Each channel has sample posts and permissions are granted to the admin and manager users.
 
+## Citizen Polls
+
+The Citizen Polls feature allows managers and admins to create binary-choice polls that are displayed prominently to citizens on the incidents and map pages.
+
+### Overview
+
+Polls provide a simple way for municipalities to gauge citizen opinion on municipal priorities and decisions. When a poll is active, it appears as a banner at the top of citizen-facing pages, making it impossible to miss.
+
+### Key Features
+
+- **Binary Choice Polls**: Simple yes/no or A/B questions for easy decision-making
+- **Prominent Placement**: Active polls appear at the top of incidents list and map pages
+- **One Vote Per Citizen**: Each citizen can vote once per poll (enforced by database constraint)
+- **Single Active Poll**: Only one poll can be active at a time per municipality
+- **Private Results**: Poll results are visible only to the poll creator and admins
+- **Poll Management**: Full lifecycle management (Draft → Active → Closed → Archived)
+- **Real-time Updates**: Poll results update in real-time as citizens vote
+- **Scheduled Polls**: Optional start and end dates for time-bound polls
+
+### Access Control (RBAC)
+
+- **Citizens**: Can view active polls and vote once per poll (authentication required)
+- **Managers**: Can create polls, activate/close their own polls, view results for their polls
+- **Admins**: Can create polls, activate/close any poll, view all poll results in municipality
+
+### Poll Lifecycle
+
+1. **DRAFT**: Poll is created but not visible to citizens
+2. **ACTIVE**: Poll is visible and citizens can vote (only one active poll allowed)
+3. **CLOSED**: Poll is closed and no longer accepting votes
+4. **ARCHIVED**: Poll is archived and hidden from management views
+
+### Data Model
+
+**Poll**
+- `id` - UUID
+- `municipalityId` - Municipality scope
+- `createdByUserId` - Poll creator (manager/admin)
+- `title` - Poll question (min 10 characters)
+- `optionA` - First choice label
+- `optionB` - Second choice label
+- `status` - DRAFT | ACTIVE | CLOSED | ARCHIVED
+- `startsAt` - Optional start timestamp
+- `endsAt` - Optional end timestamp
+- `closedAt` - Timestamp when closed
+- `closedByUserId` - Who closed the poll
+
+**PollVote**
+- `id` - UUID
+- `pollId` - Reference to poll
+- `userId` - Voter
+- `choice` - A or B
+- `createdAt` - Vote timestamp
+- **Unique constraint**: `(pollId, userId)` ensures one vote per poll per user
+
+### UI Features
+
+**Citizen Experience**
+- **Poll Banner**: Appears at top of incidents and map pages when poll is active
+- **Voting Interface**: Two prominent buttons for binary choice (Option A vs Option B)
+- **Vote Confirmation**: "Thanks for voting" message with chosen option displayed
+- **Sign-in Prompt**: Anonymous users are prompted to sign in before voting
+
+**Manager/Admin Experience**
+- **Polls Dashboard**: View all polls with status filters (All, Active, Draft, Closed)
+- **Create Poll**: Modal form with question, options, status, and optional scheduling
+- **Poll Results**: Detailed view with vote counts, percentages, and visual bar charts
+- **Quick Actions**: Activate draft polls, close active polls, view results
+- **Status Indicators**: Color-coded badges for poll status
+
+### API Endpoints
+
+**Citizen (Public Read)**
+- `GET /api/municipalities/:municipalityId/polls/active` - Get currently active poll
+- `POST /api/polls/:pollId/votes` - Cast a vote (choice: A or B)
+
+**Manager/Admin (Write)**
+- `POST /api/municipalities/:municipalityId/polls` - Create poll
+- `GET /api/municipalities/:municipalityId/polls` - List polls with filters
+- `GET /api/polls/:pollId` - Get poll details
+- `PATCH /api/polls/:pollId` - Update poll (DRAFT only or admin override)
+- `POST /api/polls/:pollId/activate` - Activate poll (auto-closes previous active poll)
+- `POST /api/polls/:pollId/close` - Close poll
+- `POST /api/polls/:pollId/archive` - Archive poll
+
+**Results (Private)**
+- `GET /api/polls/:pollId/results` - Get poll results (creator or admin only)
+
+Returns:
+```json
+{
+  "pollId": "...",
+  "title": "Should we prioritize pothole repairs?",
+  "optionA": { "label": "Yes", "count": 150, "percent": 75 },
+  "optionB": { "label": "No", "count": 50, "percent": 25 },
+  "totalVotes": 200
+}
+```
+
+### Business Rules
+
+1. **Single Active Poll**: Creating or activating a new poll automatically closes any existing active poll
+2. **One Vote Per User**: Database unique constraint prevents duplicate votes
+3. **Authentication Required**: Votes must be authenticated (no anonymous voting)
+4. **Municipality Scoping**: All queries and mutations scoped to user's municipality
+5. **Creator Permissions**: Managers can only manage polls they created
+6. **Admin Override**: Admins can manage any poll in their municipality
+7. **Results Privacy**: Results visible only to creator and admins (citizens see only their vote)
+8. **Edit Restrictions**: Polls can only be edited in DRAFT status (or by admin)
+
+### Audit Logging
+
+All poll operations are logged to the audit trail:
+- `POLL_CREATED` - Poll created with title and status
+- `POLL_ACTIVATED` - Poll activated (previous active poll auto-closed)
+- `POLL_CLOSED` - Poll closed by user
+- `POLL_ARCHIVED` - Poll archived
+- `POLL_VOTED` - Citizen voted (vote choice not logged for privacy)
+
+### Seed Data
+
+The seed script creates 1 active poll for development:
+- **Question**: "Should the municipality prioritize pothole repairs this month?"
+- **Options**: "Yes, absolutely" vs "No, focus on other issues"
+- **Sample Votes**: 3 votes (2 for A, 1 for B)
+
+### Testing
+
+Backend tests verify:
+- ✅ Citizens can view and vote on active polls
+- ✅ One vote per user per poll enforced
+- ✅ Only one active poll allowed per municipality
+- ✅ Managers can create and manage their own polls
+- ✅ Admins can view all results and manage all polls
+- ✅ Poll creator authorization (managers can't view other managers' results)
+- ✅ Authentication required for voting
+

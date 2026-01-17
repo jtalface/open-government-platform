@@ -19,6 +19,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: t("nav.map"), href: "/dashboard/map", icon: "🗺️" },
     { name: t("nav.projects"), href: "/projects", icon: "🏗️" },
     { name: t("nav.tickets"), href: "/dashboard/tickets", icon: "🎫" },
+    { name: t("nav.polls"), href: "/dashboard/polls", icon: "📊" },
   ];
 
   if (session?.user.role === "ADMIN") {
