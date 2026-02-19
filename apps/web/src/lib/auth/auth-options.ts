@@ -13,20 +13,32 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email ou Telefone", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email e senha são obrigatórios");
+          throw new Error("Email/telefone e senha são obrigatórios");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // Try to find user by email or phone
+        const identifier = credentials.email;
+        let user = await prisma.user.findUnique({
+          where: { email: identifier },
           include: {
             municipality: true,
           },
         });
+
+        // If not found by email, try by phone
+        if (!user) {
+          user = await prisma.user.findFirst({
+            where: { phone: identifier },
+            include: {
+              municipality: true,
+            },
+          });
+        }
 
         if (!user || !user.active) {
           throw new Error("Credenciais inválidas");

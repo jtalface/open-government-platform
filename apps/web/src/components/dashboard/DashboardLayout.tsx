@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { CreatePostButton } from "../channels/CreatePostButton";
 import { Logo } from "../Logo";
+import { UserDropdown } from "../UserDropdown";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -56,13 +57,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center gap-4">
               <CreatePostButton />
-              <span className="text-sm text-gray-600">{session?.user.name}</span>
-              <button
-                onClick={() => signOut()}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
-              >
-                {t("nav.signOut")}
-              </button>
+              <UserDropdown userName={session?.user.name || ""} />
             </div>
           </div>
         </div>

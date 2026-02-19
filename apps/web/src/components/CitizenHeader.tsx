@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "./Logo";
+import { UserDropdown } from "./UserDropdown";
 
 interface CitizenHeaderProps {
   session: any;
@@ -69,7 +70,7 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{session.user.name}</span>
+            <UserDropdown userName={session.user.name} />
             {showDashboard && (
               <Link
                 href="/dashboard"

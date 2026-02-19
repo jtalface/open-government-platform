@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, Input } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
@@ -50,12 +51,13 @@ export default function SignInPage() {
         <div className="rounded-xl bg-white p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              label={t("auth.email")}
-              type="email"
+              label="Email ou Telefone"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              autoComplete="email"
+              autoComplete="username"
+              placeholder="email@exemplo.com ou 841234567"
             />
 
             <Input
@@ -75,6 +77,18 @@ export default function SignInPage() {
               {isLoading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Não tem uma conta?{" "}
+              <Link
+                href="/auth/signup"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Criar conta
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
