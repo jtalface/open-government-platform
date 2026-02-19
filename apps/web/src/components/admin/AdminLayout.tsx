@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
-import { LanguageSwitcher } from "../LanguageSwitcher";
 import { Logo } from "../Logo";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -53,7 +52,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-4">
-              <LanguageSwitcher />
               <span className="rounded-full bg-white bg-opacity-20 px-3 py-1 text-xs font-semibold text-white">
                 ADMIN
               </span>

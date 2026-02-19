@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 
 interface CitizenHeaderProps {
@@ -70,7 +69,6 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <LanguageSwitcher />
             <span className="text-sm text-gray-600">{session.user.name}</span>
             {showDashboard && (
               <Link

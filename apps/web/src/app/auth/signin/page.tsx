@@ -5,7 +5,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -43,10 +42,6 @@ export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="mb-4 flex justify-end">
-          <LanguageSwitcher />
-        </div>
-
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">Open Government Platform</h1>
           <p className="mt-2 text-gray-600">{t("auth.signInTitle")}</p>

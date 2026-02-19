@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
-import { LanguageSwitcher } from "../LanguageSwitcher";
 import { CreatePostButton } from "../channels/CreatePostButton";
 import { Logo } from "../Logo";
 
@@ -57,7 +56,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center gap-4">
               <CreatePostButton />
-              <LanguageSwitcher />
               <span className="text-sm text-gray-600">{session?.user.name}</span>
               <button
                 onClick={() => signOut()}
