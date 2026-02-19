@@ -84,8 +84,8 @@ After seeding, you can log in with:
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Admin** | admin@lisboa.pt | demo123 |
-| **Manager** | manager@lisboa.pt | demo123 |
+| **Admin** | admin@beira.gov.mz | demo123 |
+| **Manager** | manager@beira.gov.mz | demo123 |
 | **Citizen** | citizen1@example.com | demo123 |
 | **Citizen** | citizen2@example.com | demo123 |
 | **Citizen** | citizen3@example.com | demo123 |
@@ -212,7 +212,7 @@ POST /api/auth/signin
 Content-Type: application/json
 
 {
-  "email": "admin@lisboa.pt",
+  "email": "admin@beira.gov.mz",
   "password": "demo123"
 }
 ```
@@ -223,7 +223,7 @@ Content-Type: application/json
 # List incidents
 GET /api/incidents
 GET /api/incidents?categoryId=<uuid>
-GET /api/incidents?lat=38.7223&lng=-9.1393&radius=5000
+GET /api/incidents?lat=-19.8344&lng=34.8389&radius=5000
 
 # Get incident
 GET /api/incidents/:id
@@ -236,7 +236,7 @@ Content-Type: application/json
   "categoryId": "uuid",
   "title": "Title",
   "description": "Description",
-  "location": { "lat": 38.7223, "lng": -9.1393 }
+  "location": { "lat": -19.8344, "lng": 34.8389 }
 }
 
 # Vote on incident

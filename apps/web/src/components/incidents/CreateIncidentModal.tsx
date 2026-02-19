@@ -5,6 +5,27 @@ import { useRouter } from "next/navigation";
 import { Button, Input } from "@ogp/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
+// Beira City Bounding Box
+const BEIRA_BOUNDS = {
+  minLat: -19.88,  // South
+  maxLat: -19.66,  // North
+  minLng: 34.78,   // West
+  maxLng: 34.91,   // East
+};
+
+// Default location - center of Beira
+const DEFAULT_LOCATION = { lat: -19.83, lng: 34.845 };
+
+// Check if coordinates are within Beira bounds
+function isWithinBeiraBounds(lat: number, lng: number): boolean {
+  return (
+    lat >= BEIRA_BOUNDS.minLat &&
+    lat <= BEIRA_BOUNDS.maxLat &&
+    lng >= BEIRA_BOUNDS.minLng &&
+    lng <= BEIRA_BOUNDS.maxLng
+  );
+}
+
 interface CreateIncidentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,21 +53,48 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
   useEffect(() => {
     if (isOpen && !location) {
       if ("geolocation" in navigator) {
+        const timeoutId = setTimeout(() => {
+          if (!location) {
+            setLocationError("Tempo esgotado. Usando localização padrão.");
+            setLocation(DEFAULT_LOCATION);
+          }
+        }, 10000);
+
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            setLocation({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            });
-            setLocationError("");
+            clearTimeout(timeoutId);
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            
+            // Check if location is within Beira bounds
+            if (isWithinBeiraBounds(userLat, userLng)) {
+              setLocation({ lat: userLat, lng: userLng });
+              setLocationError("");
+            } else {
+              // User is outside Beira - use default location
+              setLocation(DEFAULT_LOCATION);
+              setLocationError("Fora dos limites de Beira. Usando padrão.");
+            }
           },
           (error) => {
-            setLocationError("Não foi possível obter sua localização");
+            clearTimeout(timeoutId);
+            setLocationError("Usando localização padrão (Beira)");
+            setLocation(DEFAULT_LOCATION);
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000,
           }
         );
+
+        return () => clearTimeout(timeoutId);
+      } else {
+        setLocation(DEFAULT_LOCATION);
+        setLocationError("Geolocalização não suportada. Usando padrão.");
       }
     }
-  }, [isOpen]);
+  }, [isOpen, location]);
 
   // Create mutation
   const createMutation = useMutation({

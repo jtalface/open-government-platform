@@ -72,7 +72,7 @@ pnpm db:seed
 
 You should see:
 ```
-✓ Created municipality: Lisboa
+✓ Created municipality: Beira
 ✓ Created 3 neighborhoods
 ✓ Created 4 categories
 ✓ Created 5 test users
@@ -105,8 +105,8 @@ You'll be redirected to the sign-in page.
 | Role | Email | Password | What to Test |
 |------|-------|----------|--------------|
 | **Citizen** | citizen1@example.com | demo123 | Report incidents, vote |
-| **Manager** | manager@lisboa.pt | demo123 | View dashboard, manage tickets |
-| **Admin** | admin@lisboa.pt | demo123 | Full access |
+| **Manager** | manager@beira.gov.mz | demo123 | View dashboard, manage tickets |
+| **Admin** | admin@beira.gov.mz | demo123 | Full access |
 
 ## What to Try
 
@@ -118,12 +118,12 @@ You'll be redirected to the sign-in page.
 5. ✅ **Filter** - Click category pills at the top
 
 ### As a Manager:
-1. ✅ **Sign in** with `manager@lisboa.pt` / `demo123`
+1. ✅ **Sign in** with `manager@beira.gov.mz` / `demo123`
 2. ✅ **View dashboard** - See stats and map placeholder
 3. 🚧 **Tickets** - Structure is there, API pending
 
 ### As an Admin:
-1. ✅ **Sign in** with `admin@lisboa.pt` / `demo123`
+1. ✅ **Sign in** with `admin@beira.gov.mz` / `demo123`
 2. ✅ **All manager features**
 3. 🚧 **Admin panel** - Route protected, UI pending
 

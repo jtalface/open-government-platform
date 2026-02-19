@@ -108,8 +108,8 @@ Testing the system:
 
 ### Test Accounts
 ```
-Admin:    admin@lisboa.pt      / demo123
-Manager:  manager@lisboa.pt    / demo123
+Admin:    admin@beira.gov.mz      / demo123
+Manager:  manager@beira.gov.mz    / demo123
 Citizen:  citizen1@example.com / demo123
 ```
 

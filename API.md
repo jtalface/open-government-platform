@@ -21,7 +21,7 @@ POST /api/auth/signin
 Content-Type: application/json
 
 {
-  "email": "admin@lisboa.pt",
+  "email": "admin@beira.gov.mz",
   "password": "demo123"
 }
 ```
@@ -168,7 +168,7 @@ GET /api/incidents?page=1&pageSize=20
 #### List Nearby Incidents
 
 ```http
-GET /api/incidents?lat=38.7223&lng=-9.1393&radius=5000
+GET /api/incidents?lat=-19.8344&lng=34.8389&radius=5000
 ```
 
 **Query Parameters:**
@@ -203,7 +203,7 @@ GET /api/incidents/:id
           "createdAt": "2026-01-13T14:00:00.000Z",
           "author": {
             "id": "uuid",
-            "name": "Manager Lisboa"
+            "name": "Manager Beira"
           }
         }
       ]
@@ -514,7 +514,7 @@ curl -X POST http://localhost:3000/api/incidents \
     "categoryId": "...",
     "title": "Test Incident",
     "description": "This is a test incident",
-    "location": {"lat": 38.7223, "lng": -9.1393}
+    "location": {"lat": -19.8344, "lng": 34.8389}
   }'
 ```
 

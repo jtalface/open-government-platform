@@ -129,8 +129,8 @@ After seeding, sign in with:
 
 | Role | Email | Password | Access Level |
 |------|-------|----------|--------------|
-| **Admin** | admin@lisboa.pt | demo123 | Full access |
-| **Manager** | manager@lisboa.pt | demo123 | Dashboard + tickets |
+| **Admin** | admin@beira.gov.mz | demo123 | Full access |
+| **Manager** | manager@beira.gov.mz | demo123 | Dashboard + tickets |
 | **Citizen** | citizen1@example.com | demo123 | Report + vote |
 
 More accounts in [QUICKSTART.md](./QUICKSTART.md)

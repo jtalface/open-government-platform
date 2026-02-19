@@ -73,7 +73,7 @@ export function CreateChannelModal({ onClose }: CreateChannelModalProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            placeholder="Ex: Prefeita de Lisboa"
+            placeholder="Ex: Presidente do Conselho Municipal"
           />
 
           <div>

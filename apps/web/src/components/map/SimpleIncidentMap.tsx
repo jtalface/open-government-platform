@@ -8,6 +8,18 @@ import { ptBR, enUS } from "date-fns/locale";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
+// Beira City Bounding Box
+const BEIRA_BOUNDS = {
+  minLat: -19.88,  // South
+  maxLat: -19.66,  // North
+  minLng: 34.78,   // West
+  maxLng: 34.91,   // East
+  center: {
+    lat: -19.83,
+    lng: 34.845,
+  },
+};
+
 interface SimpleIncidentMapProps {
   categoryId?: string;
   status?: string;
@@ -94,13 +106,25 @@ export default function SimpleIncidentMap({
     if (!L) return;
 
     // Create map
-    const map = L.map(mapRef.current).setView([38.7223, -9.1393], 13);
+    // Beira, Mozambique - center on the city but allow panning outside
+    const map = L.map(mapRef.current, {
+      center: [BEIRA_BOUNDS.center.lat, BEIRA_BOUNDS.center.lng],
+      zoom: 13,
+      minZoom: 3,
+      maxZoom: 18,
+    });
 
     // Add tile layer
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
+
+    // Fit map to Beira bounds initially
+    map.fitBounds([
+      [BEIRA_BOUNDS.minLat, BEIRA_BOUNDS.minLng],
+      [BEIRA_BOUNDS.maxLat, BEIRA_BOUNDS.maxLng],
+    ]);
 
     mapInstanceRef.current = map;
 
