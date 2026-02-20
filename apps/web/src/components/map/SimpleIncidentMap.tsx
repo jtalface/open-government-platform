@@ -202,8 +202,32 @@ export default function SimpleIncidentMap({
       const dateFnsLocale = locale === "pt" ? ptBR : enUS;
       const translatedCategory = translateCategory(incident.category?.name || "", t);
 
+      // Parse media if it's a JSON string
+      let mediaArray: any[] = [];
+      if (incident.media) {
+        if (typeof incident.media === "string") {
+          try {
+            mediaArray = JSON.parse(incident.media);
+          } catch {
+            mediaArray = [];
+          }
+        } else if (Array.isArray(incident.media)) {
+          mediaArray = incident.media;
+        }
+      }
+      const firstImage = mediaArray.find((m: any) => m.type === "IMAGE");
+
       const popupContent = `
-        <div style="padding: 8px; min-width: 200px;">
+        <div style="padding: 8px; min-width: 200px; max-width: 300px;">
+          ${firstImage ? `
+            <div style="margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb;">
+              <img 
+                src="${firstImage.url}" 
+                alt="${incident.title}"
+                style="width: 100%; height: 150px; object-fit: cover; display: block;"
+              />
+            </div>
+          ` : ""}
           <div style="margin-bottom: 8px;">
             <span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
               ${getStatusLabel(incident.status, t)}
@@ -212,17 +236,17 @@ export default function SimpleIncidentMap({
               ${translatedCategory || t("common.noCategory")}
             </span>
           </div>
-          <h3 style="margin: 8px 0; font-weight: 600; color: #111;">
+          <h3 style="margin: 8px 0; font-weight: 600; color: #111; font-size: 16px;">
             ${incident.title}
           </h3>
-          <p style="margin: 8px 0; font-size: 14px; color: #666;">
+          <p style="margin: 8px 0; font-size: 14px; color: #666; line-height: 1.4;">
             ${incident.description.substring(0, 100)}${incident.description.length > 100 ? "..." : ""}
           </p>
           <div style="margin: 8px 0; font-size: 12px; color: #666;">
-            ${incident.neighborhood ? `<p>📍 ${incident.neighborhood.name}</p>` : ""}
-            <p>👤 ${incident.createdBy?.name || t("common.anonymous")}</p>
-            <p>👍 ${incident.voteStats?.upvotes || 0} ${t("common.votes")}</p>
-            <p>🕒 ${formatDistanceToNow(new Date(incident.createdAt), {
+            ${incident.neighborhood ? `<p style="margin: 4px 0;">📍 ${incident.neighborhood.name}</p>` : ""}
+            <p style="margin: 4px 0;">👤 ${incident.createdBy?.name || t("common.anonymous")}</p>
+            <p style="margin: 4px 0;">👍 ${incident.voteStats?.upvotes || 0} ${t("common.votes")}</p>
+            <p style="margin: 4px 0;">🕒 ${formatDistanceToNow(new Date(incident.createdAt), {
               addSuffix: true,
               locale: dateFnsLocale,
             })}</p>
@@ -242,7 +266,7 @@ export default function SimpleIncidentMap({
         </div>
       `;
 
-      marker.bindPopup(popupContent, { maxWidth: 300 });
+      marker.bindPopup(popupContent, { maxWidth: 320 });
       markersRef.current.push(marker);
       bounds.push([incident.lat, incident.lng]);
     });
