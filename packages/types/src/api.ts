@@ -74,6 +74,22 @@ export const CreateIncidentSchema = z.object({
 
 export type CreateIncidentInput = z.infer<typeof CreateIncidentSchema>;
 
+export const UpdateIncidentSchema = z.object({
+  categoryId: z.string().uuid().optional(),
+  title: z.string().min(5).max(200).optional(),
+  description: z.string().min(10).max(2000).optional(),
+  media: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        type: z.enum(["IMAGE", "VIDEO", "DOCUMENT"]),
+      })
+    )
+    .optional(),
+});
+
+export type UpdateIncidentInput = z.infer<typeof UpdateIncidentSchema>;
+
 export interface ListIncidentsParams extends PaginationParams, SortParams {
   categoryId?: string;
   status?: IncidentStatus;

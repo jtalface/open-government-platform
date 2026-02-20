@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { requireAuth } from "@/lib/auth/rbac";
 import { successResponse, handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
+import { UpdateIncidentSchema } from "@ogp/types";
 
 /**
  * GET /api/incidents/[id]
@@ -82,3 +83,72 @@ export async function GET(
   }
 }
 
+/**
+ * PATCH /api/incidents/[id]
+ * Update incident (only by creator)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    requireAuth(session);
+
+    // Get the incident first to check ownership
+    const incident = await prisma.incidentEvent.findUnique({
+      where: {
+        id: params.id,
+        municipalityId: session!.user.municipalityId,
+      },
+      select: {
+        createdByUserId: true,
+      },
+    });
+
+    if (!incident) {
+      return handleApiError(new Error("Incident not found"));
+    }
+
+    // Check if user is the creator
+    if (incident.createdByUserId !== session!.user.id) {
+      return handleApiError(
+        new Error("Apenas o criador da ocorrência pode editá-la"),
+        403
+      );
+    }
+
+    // Validate input
+    const body = await request.json();
+    const input = UpdateIncidentSchema.parse(body);
+
+    // Update incident (only allowed fields: title, description, categoryId, media)
+    const updatedIncident = await prisma.incidentEvent.update({
+      where: {
+        id: params.id,
+        municipalityId: session!.user.municipalityId,
+      },
+      data: {
+        ...(input.title && { title: input.title }),
+        ...(input.description && { description: input.description }),
+        ...(input.categoryId && { categoryId: input.categoryId }),
+        ...(input.media !== undefined && { media: input.media as any }),
+      },
+      include: {
+        category: true,
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        neighborhood: true,
+      },
+    });
+
+    return successResponse(updatedIncident);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}

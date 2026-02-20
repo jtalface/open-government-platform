@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { Card, Badge, LoadingSpinner } from "@ogp/ui";
+import { useSession } from "next-auth/react";
+import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { VoteButtons } from "./VoteButtons";
+import { EditIncidentModal } from "./EditIncidentModal";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
@@ -15,6 +18,8 @@ interface IncidentDetailProps {
 export function IncidentDetail({ incidentId }: IncidentDetailProps) {
   const { t, locale } = useTranslation();
   const router = useRouter();
+  const { data: session } = useSession();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["incident", incidentId],
@@ -61,6 +66,9 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
     }
   }
 
+  // Check if current user is the creator
+  const isCreator = session?.user?.id === incident.createdBy.id;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
       {/* Navigation buttons */}
@@ -102,11 +110,35 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
       <Card className="overflow-hidden">
         {/* Header */}
         <div className="border-b bg-white p-6">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Badge variant="info">{translateCategory(incident.category.name, t)}</Badge>
-            <Badge variant={getStatusVariant(incident.status)}>
-              {getStatusLabel(incident.status, t)}
-            </Badge>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="info">{translateCategory(incident.category.name, t)}</Badge>
+              <Badge variant={getStatusVariant(incident.status)}>
+                {getStatusLabel(incident.status, t)}
+              </Badge>
+            </div>
+            {isCreator && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditModalOpen(true)}
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                {t("common.edit")}
+              </Button>
+            )}
           </div>
 
           <h1 className="mb-4 text-3xl font-bold text-gray-900">{incident.title}</h1>
@@ -217,6 +249,21 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
           </div>
         )}
       </Card>
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <EditIncidentModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          incidentId={incidentId}
+          initialData={{
+            title: incident.title,
+            description: incident.description,
+            categoryId: incident.categoryId,
+            media: incident.media,
+          }}
+        />
+      )}
     </div>
   );
 }
