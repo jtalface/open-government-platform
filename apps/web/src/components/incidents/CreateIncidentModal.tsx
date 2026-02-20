@@ -38,6 +38,11 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
   const [categoryId, setCategoryId] = useState("");
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploadError, setImageUploadError] = useState("");
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Fetch categories
   const { data: categories } = useQuery({
@@ -96,15 +101,99 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
     }
   }, [isOpen, location]);
 
+  // Handle image selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      setImageUploadError("Apenas imagens são permitidas (JPG, PNG, WEBP, GIF)");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setImageUploadError("A imagem é muito grande. Tamanho máximo: 5MB");
+      return;
+    }
+
+    setSelectedImage(file);
+    setImageUploadError("");
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload image
+  const uploadImage = async (): Promise<string | null> => {
+    if (!selectedImage) return null;
+
+    setIsUploading(true);
+    setImageUploadError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedImage);
+
+      const res = await fetch("/api/incidents/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error?.message || "Erro ao fazer upload da imagem");
+      }
+
+      const data = await res.json();
+      return data.data.url;
+    } catch (error: any) {
+      setImageUploadError(error.message || "Erro ao fazer upload da imagem");
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Upload image first if selected
+      let imageUrl = uploadedImageUrl;
+      if (selectedImage && !imageUrl) {
+        imageUrl = await uploadImage();
+        if (!imageUrl && selectedImage) {
+          throw new Error("Falha ao fazer upload da imagem");
+        }
+      }
+
+      const incidentData = {
+        ...data,
+        media: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                type: "IMAGE",
+              },
+            ]
+          : undefined,
+      };
+
       const res = await fetch("/api/incidents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(incidentData),
       });
-      if (!res.ok) throw new Error("Failed to create incident");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error?.message || "Falha ao criar ocorrência");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -114,6 +203,10 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
       setTitle("");
       setDescription("");
       setCategoryId("");
+      setSelectedImage(null);
+      setImagePreview(null);
+      setUploadedImageUrl(null);
+      setImageUploadError("");
     },
   });
 
@@ -202,6 +295,71 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
             />
           </div>
 
+          {/* Image Upload */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Foto (Opcional)
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {selectedImage ? "Alterar Foto" : "Selecionar Foto"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </label>
+                {selectedImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      setUploadedImageUrl(null);
+                      setImageUploadError("");
+                    }}
+                    className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+
+              {imagePreview && (
+                <div className="relative rounded-lg border border-gray-200 overflow-hidden">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              )}
+
+              {imageUploadError && (
+                <p className="text-sm text-red-600">{imageUploadError}</p>
+              )}
+
+              <p className="text-xs text-gray-500">
+                Formatos aceites: JPG, PNG, WEBP, GIF. Tamanho máximo: 5MB
+              </p>
+            </div>
+          </div>
+
           <div className="rounded-lg bg-gray-50 p-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Localização</span>
@@ -221,10 +379,10 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
             <Button
               type="submit"
               className="flex-1"
-              isLoading={createMutation.isPending}
-              disabled={!location}
+              isLoading={createMutation.isPending || isUploading}
+              disabled={!location || createMutation.isPending || isUploading}
             >
-              Reportar
+              {isUploading ? "A fazer upload..." : "Reportar"}
             </Button>
           </div>
         </form>

@@ -47,23 +47,57 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
   const incident = data;
   const dateFnsLocale = locale === "pt" ? ptBR : enUS;
 
+  // Parse media if it's a JSON string
+  let mediaArray: any[] = [];
+  if (incident.media) {
+    if (typeof incident.media === "string") {
+      try {
+        mediaArray = JSON.parse(incident.media);
+      } catch {
+        mediaArray = [];
+      }
+    } else if (Array.isArray(incident.media)) {
+      mediaArray = incident.media;
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-      {/* Back button */}
-      <button
-        onClick={() => router.back()}
-        className="mb-4 flex items-center text-gray-600 hover:text-gray-900"
-      >
-        <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        {t("common.back")}
-      </button>
+      {/* Navigation buttons */}
+      <div className="mb-4 flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-gray-600 hover:text-gray-900"
+        >
+          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          {t("common.back")}
+        </button>
+        <span className="text-gray-300">|</span>
+        <button
+          onClick={() => {
+            router.push("/incidents");
+            router.refresh();
+          }}
+          className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+        >
+          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          Ver Todas as Ocorrências
+        </button>
+      </div>
 
       <Card className="overflow-hidden">
         {/* Header */}
@@ -92,6 +126,23 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
 
         {/* Content */}
         <div className="bg-white p-6">
+          {/* Image if exists */}
+          {mediaArray.length > 0 && (
+            <div className="mb-6 space-y-4">
+              {mediaArray
+                .filter((m: any) => m.type === "IMAGE")
+                .map((media: any, index: number) => (
+                  <div key={index} className="relative rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={media.url}
+                      alt={`Foto da ocorrência ${index + 1}`}
+                      className="w-full h-auto max-h-96 object-contain bg-gray-50"
+                    />
+                  </div>
+                ))}
+            </div>
+          )}
+
           <h2 className="mb-3 text-lg font-semibold text-gray-900">
             {t("incidents.description")}
           </h2>
