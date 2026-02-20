@@ -8,8 +8,11 @@ import { z } from "zod";
 
 const UpdateCategorySchema = z.object({
   name: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
+  sortOrder: z.number().int().min(0).optional(),
   active: z.boolean().optional(),
 });
 
@@ -27,6 +30,24 @@ export async function PATCH(
 
     const body = await request.json();
     const input = UpdateCategorySchema.parse(body);
+
+    // If slug is being updated, check for conflicts
+    if (input.slug) {
+      const existingCategory = await prisma.category.findFirst({
+        where: {
+          municipalityId: session!.user.municipalityId,
+          slug: input.slug,
+          id: { not: params.id },
+        },
+      });
+
+      if (existingCategory) {
+        return Response.json(
+          { error: { message: "Slug já está em uso" } },
+          { status: 400 }
+        );
+      }
+    }
 
     const category = await prisma.category.update({
       where: {

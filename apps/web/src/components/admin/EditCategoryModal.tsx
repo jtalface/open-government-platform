@@ -1,32 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input } from "@ogp/ui";
 
-interface CreateCategoryModalProps {
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon: string;
+  color: string;
+  sortOrder: number;
+  active: boolean;
+}
+
+interface EditCategoryModalProps {
+  category: Category;
   onClose: () => void;
 }
 
-export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
+export function EditCategoryModal({ category, onClose }: EditCategoryModalProps) {
   const queryClient = useQueryClient();
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [description, setDescription] = useState("");
-  const [icon, setIcon] = useState("📂");
-  const [color, setColor] = useState("#6B7280");
-  const [sortOrder, setSortOrder] = useState("0");
+  const [name, setName] = useState(category.name);
+  const [slug, setSlug] = useState(category.slug);
+  const [description, setDescription] = useState(category.description || "");
+  const [icon, setIcon] = useState(category.icon);
+  const [color, setColor] = useState(category.color);
+  const [sortOrder, setSortOrder] = useState(category.sortOrder.toString());
+  const [active, setActive] = useState(category.active);
 
-  const createMutation = useMutation({
+  const updateMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch("/api/admin/categories", {
-        method: "POST",
+      const res = await fetch(`/api/admin/categories/${category.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error?.message || "Failed to create category");
+        throw new Error(error.error?.message || "Falha ao atualizar categoria");
       }
       return res.json();
     },
@@ -39,20 +52,21 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate({
+    updateMutation.mutate({
       name,
-      slug: slug || name.toLowerCase().replace(/\s+/g, "-"),
+      slug,
       description: description || undefined,
       icon: icon || "📂",
       color: color || "#6B7280",
       sortOrder: parseInt(sortOrder) || 0,
+      active,
     });
   };
 
-  // Auto-generate slug from name
+  // Auto-generate slug from name if slug is empty
   const handleNameChange = (value: string) => {
     setName(value);
-    if (!slug) {
+    if (!slug || slug === category.slug) {
       setSlug(value.toLowerCase().replace(/\s+/g, "-"));
     }
   };
@@ -61,7 +75,7 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Criar Categoria</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Editar Categoria</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -156,18 +170,31 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
             />
           </div>
 
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="active"
+              checked={active}
+              onChange={(e) => setActive(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="active" className="text-sm font-medium text-gray-700">
+              Categoria ativa
+            </label>
+          </div>
+
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1" isLoading={createMutation.isPending}>
-              Criar
+            <Button type="submit" className="flex-1" isLoading={updateMutation.isPending}>
+              Atualizar
             </Button>
           </div>
 
-          {createMutation.isError && (
+          {updateMutation.isError && (
             <p className="text-sm text-red-600">
-              ⚠️ {(createMutation.error as Error).message}
+              ⚠️ {(updateMutation.error as Error).message}
             </p>
           )}
         </form>
@@ -175,4 +202,3 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
     </div>
   );
 }
-

@@ -4,15 +4,28 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { CreateCategoryModal } from "./CreateCategoryModal";
+import { EditCategoryModal } from "./EditCategoryModal";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon: string;
+  color: string;
+  sortOrder: number;
+  active: boolean;
+}
 
 export function CategoryManagement() {
   const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-categories"],
     queryFn: async () => {
-      const response = await fetch("/api/categories");
+      const response = await fetch("/api/admin/categories");
       if (!response.ok) throw new Error("Failed to fetch categories");
       return response.json();
     },
@@ -107,22 +120,41 @@ export function CategoryManagement() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <div
+                    className="h-4 w-4 rounded-full"
+                    style={{ backgroundColor: category.color || "#6B7280" }}
+                  />
                   <Badge variant={category.active ? "success" : "error"}>
                     {category.active ? "Ativa" : "Inativa"}
                   </Badge>
                   <span className="text-xs text-gray-500">
-                    slug: {category.slug}
+                    Ordem: {category.sortOrder}
                   </span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-500">
+                    <div>Slug: {category.slug}</div>
+                    {category.description && (
+                      <div className="mt-1 truncate">{category.description}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
                   <button
+                    onClick={() => setEditingCategory(category)}
+                    className="flex-1 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-600 hover:bg-green-100"
+                  >
+                    ✏️ Editar
+                  </button>
+                  <button
                     onClick={() =>
                       handleToggleActive(category.id, category.active, category.name)
                     }
-                    className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100"
+                    className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100"
                   >
-                    {category.active ? "🔒 Desativar" : "✅ Ativar"}
+                    {category.active ? "🔒" : "✅"}
                   </button>
                   <button
                     onClick={() => handleDelete(category.id, category.name)}
@@ -140,6 +172,14 @@ export function CategoryManagement() {
       {/* Create Category Modal */}
       {isCreateModalOpen && (
         <CreateCategoryModal onClose={() => setIsCreateModalOpen(false)} />
+      )}
+
+      {/* Edit Category Modal */}
+      {editingCategory && (
+        <EditCategoryModal
+          category={editingCategory}
+          onClose={() => setEditingCategory(null)}
+        />
       )}
     </div>
   );

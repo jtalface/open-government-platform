@@ -7,11 +7,38 @@ import { prisma } from "@ogp/database";
 import { z } from "zod";
 
 const CreateCategorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
+  name: z.string().min(1, "Nome é obrigatório"),
+  slug: z.string().min(1, "Slug é obrigatório"),
   description: z.string().optional(),
   icon: z.string().optional(),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
+  sortOrder: z.number().int().min(0).optional(),
 });
+
+/**
+ * GET /api/admin/categories
+ * List all categories (including inactive) for admin
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    requireAdmin(session);
+
+    const categories = await prisma.category.findMany({
+      where: {
+        municipalityId: session!.user.municipalityId,
+      },
+      orderBy: [
+        { sortOrder: "asc" },
+        { name: "asc" },
+      ],
+    });
+
+    return successResponse(categories);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
 
 /**
  * POST /api/admin/categories
@@ -46,7 +73,9 @@ export async function POST(request: NextRequest) {
         name: input.name,
         slug: input.slug,
         description: input.description,
-        icon: input.icon,
+        icon: input.icon || "📂",
+        color: input.color || "#6B7280",
+        sortOrder: input.sortOrder ?? 0,
         active: true,
       },
     });

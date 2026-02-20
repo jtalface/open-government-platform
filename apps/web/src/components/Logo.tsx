@@ -48,9 +48,9 @@ export function Logo({ role, size = "md", className = "", textColor }: LogoProps
         className="object-contain"
         priority
       />
-      {role && role !== "CITIZEN" && (
+      {role && role === "MANAGER" && (
         <span className={`font-bold ${getTextColor()} ${config.textSize}`}>
-          {role === "ADMIN" ? "Admin" : "Manager"}
+          Manager
         </span>
       )}
     </div>
