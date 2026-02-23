@@ -262,13 +262,22 @@ pnpm install
 
 **Note**: ESLint and TypeScript checking are disabled during builds by default (configured in `next.config.js`). Linting should be done in CI/CD, not during production builds.
 
-### Step 3: Build Application
+### Step 3: Generate Prisma Client
+
+**Important**: Prisma client must be generated before building the application.
+
+```bash
+# Generate Prisma client
+pnpm db:generate
+```
+
+### Step 4: Build Application
 
 ```bash
 # Clean build (if you have cached build artifacts)
 rm -rf apps/web/.next
 
-# Build application
+# Build application (this will also build the database package which generates Prisma client)
 pnpm build
 ```
 
@@ -276,10 +285,11 @@ pnpm build
 ```bash
 # Clear all caches and rebuild
 rm -rf apps/web/.next node_modules/.cache
+pnpm db:generate
 pnpm build
 ```
 
-### Step 4: Create Environment Files
+### Step 5: Create Environment Files
 
 #### Create `.env` in `apps/web/`:
 
