@@ -6,6 +6,7 @@
 set -e
 
 # Configuration
+# Works on Amazon Linux (ec2-user) and Ubuntu (ubuntu)
 DATE=$(date +%Y%m%d)
 BACKUP_DIR="${HOME}/backups"
 UPLOADS_DIR="${HOME}/open-government-platform/apps/web/public/uploads"

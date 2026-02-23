@@ -20,7 +20,7 @@ Quick reference checklist for deploying Open Government Platform on AWS EC2.
   - [ ] PostgreSQL (5432) from EC2 security group only
 
 ### EC2 Instance
-- [ ] Instance launched (Ubuntu 22.04, t3.medium+)
+- [ ] Instance launched (**Amazon Linux 2023** recommended, or Ubuntu 22.04, t3.medium+)
 - [ ] Security group attached
 - [ ] Key pair configured
 - [ ] IAM role created with S3 permissions (if using S3)
@@ -44,8 +44,8 @@ Quick reference checklist for deploying Open Government Platform on AWS EC2.
 
 ## EC2 Setup
 
-- [ ] Connected to instance via SSH
-- [ ] System updated (`sudo apt update && sudo apt upgrade -y`)
+- [ ] Connected to instance via SSH (`ec2-user@` for Amazon Linux, `ubuntu@` for Ubuntu)
+- [ ] Ran deploy-setup.sh OR manual install complete
 - [ ] Node.js 20.x installed
 - [ ] pnpm installed
 - [ ] PostgreSQL client installed
@@ -54,7 +54,7 @@ Quick reference checklist for deploying Open Government Platform on AWS EC2.
 - [ ] Git installed
 - [ ] Certbot installed (for SSL)
 - [ ] AWS CLI installed (for backups)
-- [ ] Firewall (UFW) configured
+- [ ] Firewall configured (UFW on Ubuntu; Security Groups for Amazon Linux)
 
 ## Application Deployment
 

@@ -2,6 +2,16 @@
 
 Complete step-by-step guide to deploy the Open Government Platform on AWS EC2.
 
+## Supported Operating Systems
+
+| OS | Package Manager | Default User | Recommended |
+|----|-----------------|--------------|-------------|
+| **Amazon Linux 2023** | `dnf` | `ec2-user` | ✅ Yes |
+| Amazon Linux 2 | `dnf` | `ec2-user` | ✅ Yes |
+| Ubuntu 22.04 | `apt` | `ubuntu` | ✅ Yes |
+
+**Amazon Linux 2023** is the default AWS AMI, optimized for EC2, and is the recommended choice. The `deploy-setup.sh` script auto-detects your OS and runs the appropriate commands.
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -49,7 +59,9 @@ Complete step-by-step guide to deploy the Open Government Platform on AWS EC2.
 ### Step 2: Launch EC2 Instance
 
 1. **Instance Type**: `t3.medium` or `t3.large` (minimum 2 vCPU, 4GB RAM)
-2. **AMI**: Ubuntu 22.04 LTS (or Amazon Linux 2023)
+2. **AMI**: **Amazon Linux 2023** (recommended) or Ubuntu 22.04 LTS
+   - **Amazon Linux 2023** is the default AWS option, optimized for EC2, and uses `dnf` package manager
+   - Ubuntu 22.04 is also supported; the setup script auto-detects the OS
 3. **Storage**: 20GB+ GP3 SSD
 4. **Security Group**: `ogp-ec2-sg`
 5. **Key Pair**: Your existing or create new
@@ -175,65 +187,55 @@ Note down:
 ### Step 1: Connect to EC2 Instance
 
 ```bash
+# Amazon Linux 2023 (default user: ec2-user)
+ssh -i your-key.pem ec2-user@<ec2-elastic-ip>
+
+# Ubuntu (default user: ubuntu)
 ssh -i your-key.pem ubuntu@<ec2-elastic-ip>
 ```
 
-### Step 2: Update System
+### Step 2: Run Automated Setup Script (Recommended)
 
+The setup script auto-detects your OS (Amazon Linux or Ubuntu) and installs all dependencies:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jtalface/open-government-platform/main/scripts/deploy-setup.sh -o deploy-setup.sh
+chmod +x deploy-setup.sh
+./deploy-setup.sh
+```
+
+**Supported OS**: Amazon Linux 2023, Amazon Linux 2, Ubuntu 22.04
+
+### Step 3: Manual Installation (Alternative)
+
+If you prefer manual setup, follow the commands for your OS:
+
+**Amazon Linux 2023** (uses `dnf`):
+```bash
+sudo dnf update -y
+curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+sudo dnf install -y nodejs postgresql15 nginx git
+sudo systemctl enable nginx && sudo systemctl start nginx
+npm install -g pnpm pm2
+```
+
+**Ubuntu 22.04** (uses `apt`):
 ```bash
 sudo apt update && sudo apt upgrade -y
-```
-
-### Step 3: Install Node.js 20.x
-
-```bash
-# Install Node.js 20.x
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Verify installation
-node --version  # Should be v20.x.x
-npm --version
+sudo apt install -y nodejs postgresql-client nginx git
+sudo systemctl enable nginx && sudo systemctl start nginx
+npm install -g pnpm pm2
 ```
 
-### Step 4: Install pnpm
+### Step 4: Create Application User (Optional but Recommended)
 
 ```bash
-npm install -g pnpm
-pnpm --version
-```
+# Amazon Linux
+sudo adduser ogp
+sudo usermod -aG wheel ogp
 
-### Step 5: Install PostgreSQL Client (for migrations)
-
-```bash
-sudo apt install -y postgresql-client
-```
-
-### Step 6: Install Nginx
-
-```bash
-sudo apt install -y nginx
-sudo systemctl enable nginx
-sudo systemctl start nginx
-```
-
-### Step 7: Install PM2 (Process Manager)
-
-```bash
-sudo npm install -g pm2
-pm2 startup systemd
-# Follow the instructions to enable PM2 on system startup
-```
-
-### Step 8: Install Git
-
-```bash
-sudo apt install -y git
-```
-
-### Step 9: Create Application User (Optional but Recommended)
-
-```bash
+# Ubuntu
 sudo adduser --disabled-password --gecos "" ogp
 sudo usermod -aG sudo ogp
 ```
@@ -245,7 +247,9 @@ sudo usermod -aG sudo ogp
 ### Step 1: Clone Repository
 
 ```bash
-cd /home/ubuntu  # or /home/ogp if using dedicated user
+# Amazon Linux: /home/ec2-user
+# Ubuntu: /home/ubuntu
+cd ~
 git clone https://github.com/jtalface/open-government-platform.git
 cd open-government-platform
 ```
@@ -355,11 +359,17 @@ For now, local storage in `public/uploads/` works, but S3 is recommended for pro
 
 ### Step 1: Create Nginx Configuration
 
+**Ubuntu**: Create in sites-available
 ```bash
 sudo nano /etc/nginx/sites-available/ogp
 ```
 
-**Content**:
+**Amazon Linux**: Create in conf.d
+```bash
+sudo nano /etc/nginx/conf.d/ogp.conf
+```
+
+**Content** (same for both):
 ```nginx
 server {
     listen 80;
@@ -391,8 +401,16 @@ server {
 
 ### Step 2: Enable Site
 
+**Ubuntu** (uses sites-available/sites-enabled):
 ```bash
 sudo ln -s /etc/nginx/sites-available/ogp /etc/nginx/sites-enabled/
+sudo nginx -t  # Test configuration
+sudo systemctl reload nginx
+```
+
+**Amazon Linux** (uses conf.d - create config directly):
+```bash
+# Config goes in /etc/nginx/conf.d/ogp.conf (create this file with the server block above)
 sudo nginx -t  # Test configuration
 sudo systemctl reload nginx
 ```
@@ -408,8 +426,9 @@ Make sure `NEXTAUTH_URL` in `.env.production` matches your domain.
 ### Option 1: Using Let's Encrypt (Free)
 
 ```bash
-# Install Certbot
-sudo apt install -y certbot python3-certbot-nginx
+# Certbot is installed by deploy-setup.sh
+# Amazon Linux: sudo dnf install -y certbot python3-certbot-nginx
+# Ubuntu: sudo apt install -y certbot python3-certbot-nginx
 
 # Get certificate
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
@@ -430,12 +449,15 @@ sudo certbot renew --dry-run  # Test renewal
 
 ### Step 1: Create PM2 Ecosystem File
 
+The repository includes `ecosystem.config.js` at the project root. Ensure the `cwd` path matches your deployment:
+
 ```bash
-cd /home/ubuntu/open-government-platform
-nano ecosystem.config.js
+# Amazon Linux: /home/ec2-user/open-government-platform
+# Ubuntu: /home/ubuntu/open-government-platform
+cd ~/open-government-platform
 ```
 
-**Content**:
+**Content** (ecosystem.config.js - already in repo):
 ```javascript
 module.exports = {
   apps: [
@@ -443,7 +465,7 @@ module.exports = {
       name: 'ogp-web',
       script: 'pnpm',
       args: 'start',
-      cwd: '/home/ubuntu/open-government-platform',
+      cwd: process.cwd(),  // Uses current directory when run from project root
       env: {
         NODE_ENV: 'production',
         PORT: 4000,
@@ -579,8 +601,9 @@ crontab -e
 
 ### Additional Security Steps
 
-#### 1. Configure UFW Firewall
+#### 1. Configure Firewall
 
+**Ubuntu** (UFW):
 ```bash
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -589,6 +612,8 @@ sudo ufw allow 'Nginx Full'
 sudo ufw enable
 sudo ufw status
 ```
+
+**Amazon Linux**: AWS Security Groups handle firewall. Ensure your EC2 Security Group allows SSH (22), HTTP (80), HTTPS (443). Local firewalld is optional.
 
 #### 2. Disable Root Login (if using dedicated user)
 
