@@ -260,6 +260,12 @@ cd open-government-platform
 pnpm install
 ```
 
+**Note**: If you get ESLint errors during build, the missing dependencies should now be installed. If issues persist, you can skip linting during build by setting:
+```bash
+export SKIP_LINT=true
+pnpm build
+```
+
 ### Step 3: Build Application
 
 ```bash
