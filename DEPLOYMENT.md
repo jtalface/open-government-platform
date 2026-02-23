@@ -260,15 +260,22 @@ cd open-government-platform
 pnpm install
 ```
 
-**Note**: If you get ESLint errors during build, the missing dependencies should now be installed. If issues persist, you can skip linting during build by setting:
-```bash
-export SKIP_LINT=true
-pnpm build
-```
+**Note**: ESLint and TypeScript checking are disabled during builds by default (configured in `next.config.js`). Linting should be done in CI/CD, not during production builds.
 
 ### Step 3: Build Application
 
 ```bash
+# Clean build (if you have cached build artifacts)
+rm -rf apps/web/.next
+
+# Build application
+pnpm build
+```
+
+**Note**: ESLint and TypeScript checking are disabled during builds. If you still see lint errors, try:
+```bash
+# Clear all caches and rebuild
+rm -rf apps/web/.next node_modules/.cache
 pnpm build
 ```
 

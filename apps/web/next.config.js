@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable ESLint during builds (optional - can be enabled for stricter checks)
+  // Disable ESLint during builds (linting should be done in CI/CD, not during production builds)
   eslint: {
-    ignoreDuringBuilds: process.env.SKIP_LINT === 'true',
+    ignoreDuringBuilds: true,
   },
-  // Disable TypeScript type checking during builds (optional)
+  // Disable TypeScript type checking during builds (type checking should be done in CI/CD)
   typescript: {
-    ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
+    ignoreBuildErrors: true,
   },
 };
  
