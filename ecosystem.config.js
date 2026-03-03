@@ -1,10 +1,14 @@
+const path = require('path');
+
 module.exports = {
   apps: [
     {
       name: 'ogp-web',
       script: 'pnpm',
       args: 'start',
-      cwd: process.cwd(),
+      // Always run the web app with CWD at apps/web so Next and the
+      // upload route agree on the public/ directory location.
+      cwd: path.join(__dirname, 'apps', 'web'),
       env: {
         NODE_ENV: 'production',
         PORT: 4000,
