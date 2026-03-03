@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "./Logo";
 import { UserDropdown } from "./UserDropdown";
+import { MunicipalityDropdown } from "./MunicipalityDropdown";
 
 interface CitizenHeaderProps {
   session: any;
@@ -59,6 +60,7 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
                 <span className="hidden lg:inline">{item.label}</span>
               </Link>
             ))}
+            <MunicipalityDropdown />
           </nav>
 
           {/* Right side - User dropdown and Dashboard button */}

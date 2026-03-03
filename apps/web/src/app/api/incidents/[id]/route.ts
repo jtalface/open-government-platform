@@ -108,17 +108,13 @@ export async function PATCH(
 
     if (!incident) {
       return handleApiError(new Error("Incident not found"));
-    }
-
-    // Check if user is the creator
+    }    // Check if user is the creator
     if (incident.createdByUserId !== session!.user.id) {
       return handleApiError(
         new Error("Apenas o criador da ocorrência pode editá-la"),
         403
       );
-    }
-
-    // Validate input
+    }    // Validate input
     const body = await request.json();
     const input = UpdateIncidentSchema.parse(body);
 
