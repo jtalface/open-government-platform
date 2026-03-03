@@ -5,6 +5,9 @@ import { requireAuth } from "@/lib/auth/rbac";
 import { successResponse, handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 
+// Uses getServerSession (headers/cookies) so it must always run dynamically.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/categories
  * List categories for the user's municipality

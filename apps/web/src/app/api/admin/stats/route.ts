@@ -5,6 +5,10 @@ import { requireAdmin } from "@/lib/auth/rbac";
 import { successResponse, handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 
+// This route uses getServerSession (which relies on headers/cookies),
+// so mark it as fully dynamic to avoid static optimization errors.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/admin/stats
  * Get system-wide statistics
