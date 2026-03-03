@@ -209,7 +209,7 @@ export async function getIncidentsNearby(
         ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
         ${radiusMeters}
       )
-    ORDER BY ie."importanceScore" DESC, ie."createdAt" DESC
+    ORDER BY ie."createdAt" DESC
     LIMIT ${limit}
   `;
 

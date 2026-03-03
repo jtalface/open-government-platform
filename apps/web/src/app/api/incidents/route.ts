@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
           },
           neighborhood: true,
         },
-        orderBy: [{ importanceScore: "desc" }, { createdAt: "desc" }],
+        // Order newest incidents first
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
