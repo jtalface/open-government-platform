@@ -80,17 +80,9 @@ export async function POST(request: NextRequest) {
     const filepath = join(uploadsDir, filename);
     await writeFile(filepath, buffer);
 
-    // Construct full URL
-    // Priority: NEXTAUTH_URL env var > request URL > fallback
-    let baseUrl: string;
-    if (process.env.NEXTAUTH_URL) {
-      baseUrl = process.env.NEXTAUTH_URL;
-    } else {
-      const url = new URL(request.url);
-      baseUrl = `${url.protocol}//${url.host}`;
-    }
-    
-    const publicUrl = `${baseUrl}/uploads/incidents/${filename}`;
+    // Construct deployment-agnostic URL (relative to current origin)
+    // This avoids hardcoding hostnames/IPs so any deployment works automatically.
+    const publicUrl = `/uploads/incidents/${filename}`;
 
     return NextResponse.json({
       success: true,
