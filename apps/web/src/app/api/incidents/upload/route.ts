@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { requireAuth } from "@/lib/auth/rbac";
 import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { basename, join } from "path";
 import { existsSync } from "fs";
 
 // Allowed image MIME types
@@ -68,8 +68,13 @@ export async function POST(request: NextRequest) {
     const fileExtension = file.name.split(".").pop() || "jpg";
     const filename = `incident-${timestamp}-${randomString}.${fileExtension}`;
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads", "incidents");
+    // Create uploads directory if it doesn't exist.
+    // In dev, the Next app usually runs with cwd = apps/web.
+    // In production (PM2 in monorepo root), cwd may be the repo root,
+    // so we normalize to ensure files are written under apps/web/public.
+    const cwd = process.cwd();
+    const appRoot = basename(cwd) === "web" ? cwd : join(cwd, "apps", "web");
+    const uploadsDir = join(appRoot, "public", "uploads", "incidents");
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
