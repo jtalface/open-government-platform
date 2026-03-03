@@ -51,6 +51,19 @@ export interface SortParams {
 }
 
 // ===========================================
+// INCIDENT & MEDIA URL HELPERS
+// ===========================================
+
+// Accept either a full URL (http/https) or a deployment-agnostic
+// relative path under /uploads (e.g. /uploads/incidents/filename.jpg).
+const mediaUrlSchema = z.union([
+  z.string().url(),
+  z.string().regex(/^\/uploads\//, {
+    message: "Invalid url",
+  }),
+]);
+
+// ===========================================
 // INCIDENT API
 // ===========================================
 
@@ -65,7 +78,7 @@ export const CreateIncidentSchema = z.object({
   media: z
     .array(
       z.object({
-        url: z.string().url(),
+        url: mediaUrlSchema,
         type: z.enum(["IMAGE", "VIDEO", "DOCUMENT"]),
       })
     )
@@ -81,7 +94,7 @@ export const UpdateIncidentSchema = z.object({
   media: z
     .array(
       z.object({
-        url: z.string().url(),
+        url: mediaUrlSchema,
         type: z.enum(["IMAGE", "VIDEO", "DOCUMENT"]),
       })
     )
@@ -153,7 +166,7 @@ export const CreateTicketUpdateSchema = z.object({
   attachments: z
     .array(
       z.object({
-        url: z.string().url(),
+        url: mediaUrlSchema,
         type: z.enum(["IMAGE", "VIDEO", "DOCUMENT"]),
       })
     )
