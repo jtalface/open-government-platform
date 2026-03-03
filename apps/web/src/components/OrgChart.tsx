@@ -121,7 +121,7 @@ export function OrgChart({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-hidden bg-gray-50 relative"
+      className="w-full h-full overflow-hidden bg-gray-100 relative"
       style={{ minHeight: "600px" }}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
@@ -139,13 +139,13 @@ export function OrgChart({
       >
         <div className="p-4 md:p-8">
           {/* Root Node - PRESIDENTE */}
-          <div className="flex flex-col items-center mb-6 md:mb-8">
+          <div className="flex flex-col items-center mb-2 md:mb-3">
             <div data-node-id={rootNode.id}>
               <OrgNodeCard node={rootNode} onClick={() => handleNodeClick(rootNode.id)} />
             </div>
             
             {/* Connector line */}
-            <div className="w-0.5 h-6 md:h-8 bg-gray-300 my-2"></div>
+            <div className="w-0.5 h-10 md:h-12 bg-gray-300 my-2"></div>
           </div>
 
           {/* Children Nodes - Grid Layout */}
