@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { getProjectsByMunicipality } from "@/lib/services/project-service";
 import { handleApiError } from "@/lib/api/error-handler";
 
+// Uses getServerSession (headers/cookies) so it must always run dynamically.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/projects
  * List projects for the user's municipality

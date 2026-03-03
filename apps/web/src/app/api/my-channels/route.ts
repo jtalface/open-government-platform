@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { getUserChannels } from "@/lib/services/channel-service";
 import { handleApiError } from "@/lib/api/error-handler";
 
+// Uses getServerSession (headers/cookies) so it must always run dynamically.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/my-channels
  * Get channels where the current user has posting permissions
