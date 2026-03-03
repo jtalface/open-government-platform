@@ -5,6 +5,7 @@ import { OrgNode } from "@/data/cmbOrg2017_2021";
 
 interface OrgChartProps {
   data: OrgNode[];
+  rootNodeId?: string | null; // Optional: specify which root node to display
   onNodeClick?: (nodeId: string) => void;
   focusNodeId?: string | null;
   expandAll?: boolean;
@@ -16,9 +17,16 @@ const kindColors: Record<string, string> = {
   vereacao: "#10b981",
   gabinete: "#8b5cf6",
   departamento: "#f59e0b",
+  servico: "#6b7280",
+  unidade: "#14b8a6",
 };
 
-function OrgNodeCard({ node, onClick }: { node: OrgNode; onClick: () => void }) {
+function OrgNodeCard({ node, onClick, hasChildren, isExpanded }: { 
+  node: OrgNode; 
+  onClick: () => void;
+  hasChildren: boolean;
+  isExpanded: boolean;
+}) {
   const color = kindColors[node.kind] || "#6b7280";
 
   return (
@@ -30,12 +38,76 @@ function OrgNodeCard({ node, onClick }: { node: OrgNode; onClick: () => void }) 
       <div className="text-xs md:text-sm font-semibold text-gray-900 text-center leading-tight">
         {node.title}
       </div>
+      {hasChildren && (
+        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
+          {isExpanded ? "▼" : "▶"}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Recursive component to render nested children
+function NestedChildren({ 
+  parentId, 
+  data, 
+  expandedNodes, 
+  onNodeClick, 
+  level = 0 
+}: { 
+  parentId: string; 
+  data: OrgNode[]; 
+  expandedNodes: Set<string>;
+  onNodeClick: (nodeId: string) => void;
+  level?: number;
+}) {
+  const children = useMemo(
+    () => data.filter((n) => n.parentId === parentId),
+    [data, parentId]
+  );
+
+  if (children.length === 0) return null;
+
+  const isExpanded = expandedNodes.has(parentId);
+
+  if (!isExpanded) return null;
+
+  return (
+    <div className={`mt-3 ${level > 0 ? "ml-4 pl-4 border-l-2 border-gray-200" : ""}`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+        {children.map((node) => {
+          const nodeChildren = data.filter((n) => n.parentId === node.id);
+          const hasChildren = nodeChildren.length > 0;
+          const isNodeExpanded = expandedNodes.has(node.id);
+
+          return (
+            <div key={node.id} data-node-id={node.id} className="flex flex-col">
+              <OrgNodeCard
+                node={node}
+                onClick={() => onNodeClick(node.id)}
+                hasChildren={hasChildren}
+                isExpanded={isNodeExpanded}
+              />
+              {hasChildren && (
+                <NestedChildren
+                  parentId={node.id}
+                  data={data}
+                  expandedNodes={expandedNodes}
+                  onNodeClick={onNodeClick}
+                  level={level + 1}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export function OrgChart({
   data,
+  rootNodeId = null,
   onNodeClick,
   focusNodeId,
   expandAll,
@@ -47,16 +119,48 @@ export function OrgChart({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  // Get root node and children
-  const rootNode = useMemo(() => data.find((n) => n.parentId === null), [data]);
+  // Get root node - either specified or first one found
+  const rootNode = useMemo(() => {
+    if (rootNodeId) {
+      return data.find((n) => n.id === rootNodeId && n.parentId === null);
+    }
+    return data.find((n) => n.parentId === null);
+  }, [data, rootNodeId]);
+
   const childrenNodes = useMemo(
     () => data.filter((n) => n.parentId === rootNode?.id),
     [data, rootNode]
   );
 
+  // Initialize expanded nodes - expand root by default
+  useEffect(() => {
+    if (rootNode) {
+      setExpandedNodes((prev) => new Set([...prev, rootNode.id]));
+    }
+  }, [rootNode]);
+
+  // Handle expand all / collapse all
+  useEffect(() => {
+    if (expandAll && rootNode) {
+      setExpandedNodes(new Set(data.map((n) => n.id)));
+    } else if (collapseAll && rootNode) {
+      setExpandedNodes(new Set([rootNode.id]));
+    }
+  }, [expandAll, collapseAll, data, rootNode]);
+
   const handleNodeClick = useCallback(
     (nodeId: string) => {
+      setExpandedNodes((prev) => {
+        const next = new Set(prev);
+        if (next.has(nodeId)) {
+          next.delete(nodeId);
+        } else {
+          next.add(nodeId);
+        }
+        return next;
+      });
       onNodeClick?.(nodeId);
     },
     [onNodeClick]
@@ -118,6 +222,9 @@ export function OrgChart({
     );
   }
 
+  const rootHasChildren = childrenNodes.length > 0;
+  const isRootExpanded = expandedNodes.has(rootNode.id);
+
   return (
     <div
       ref={containerRef}
@@ -138,24 +245,53 @@ export function OrgChart({
         }}
       >
         <div className="p-4 md:p-8">
-          {/* Root Node - PRESIDENTE */}
+          {/* Root Node */}
           <div className="flex flex-col items-center mb-2 md:mb-3">
             <div data-node-id={rootNode.id}>
-              <OrgNodeCard node={rootNode} onClick={() => handleNodeClick(rootNode.id)} />
+              <OrgNodeCard
+                node={rootNode}
+                onClick={() => handleNodeClick(rootNode.id)}
+                hasChildren={rootHasChildren}
+                isExpanded={isRootExpanded}
+              />
             </div>
             
             {/* Connector line */}
-            <div className="w-0.5 h-10 md:h-12 bg-gray-300 my-2"></div>
+            {rootHasChildren && (
+              <div className="w-0.5 h-10 md:h-12 bg-gray-300 my-2"></div>
+            )}
           </div>
 
-          {/* Children Nodes - Grid Layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
-            {childrenNodes.map((node) => (
-              <div key={node.id} data-node-id={node.id} className="flex justify-center">
-                <OrgNodeCard node={node} onClick={() => handleNodeClick(node.id)} />
-              </div>
-            ))}
-          </div>
+          {/* Children Nodes - Grid Layout with nested support */}
+          {isRootExpanded && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
+              {childrenNodes.map((node) => {
+                const nodeChildren = data.filter((n) => n.parentId === node.id);
+                const hasChildren = nodeChildren.length > 0;
+                const isNodeExpanded = expandedNodes.has(node.id);
+
+                return (
+                  <div key={node.id} data-node-id={node.id} className="flex flex-col">
+                    <OrgNodeCard
+                      node={node}
+                      onClick={() => handleNodeClick(node.id)}
+                      hasChildren={hasChildren}
+                      isExpanded={isNodeExpanded}
+                    />
+                    {hasChildren && (
+                      <NestedChildren
+                        parentId={node.id}
+                        data={data}
+                        expandedNodes={expandedNodes}
+                        onNodeClick={handleNodeClick}
+                        level={1}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
       
