@@ -6,6 +6,10 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { PageHeader } from "@/components/PageHeader";
 
+// This page relies on authenticated, per-request data (getServerSession),
+// so mark it as dynamic to avoid static generation errors.
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
 
