@@ -69,12 +69,11 @@ export async function POST(request: NextRequest) {
     const filename = `incident-${timestamp}-${randomString}.${fileExtension}`;
 
     // Create uploads directory if it doesn't exist.
-    // Next can run with different CWDs in dev vs prod (e.g. .next/standalone),
-    // so we normalize to always write under the apps/web/public folder.
-    const cwd = process.cwd();
+    // Resolve the app root based on __dirname so it works with .next/server or .next/standalone.
     const appsWebSegment = `${sep}apps${sep}web`;
-    const idx = cwd.lastIndexOf(appsWebSegment);
-    const appRoot = idx !== -1 ? cwd.slice(0, idx + appsWebSegment.length) : join(cwd, "apps", "web");
+    const baseDir = __dirname;
+    const idx = baseDir.lastIndexOf(appsWebSegment);
+    const appRoot = idx !== -1 ? baseDir.slice(0, idx + appsWebSegment.length) : process.cwd();
     const uploadsDir = join(appRoot, "public", "uploads", "incidents");
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
