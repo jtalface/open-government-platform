@@ -34,8 +34,7 @@ export function MunicipalityDropdown() {
         }`}
       >
         <span className="mr-1 lg:mr-2">🏛️</span>
-        <span className="hidden lg:inline">Município da Beira</span>
-        <span className="lg:hidden">Município</span>
+        <span className="hidden lg:inline">Município</span>
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"

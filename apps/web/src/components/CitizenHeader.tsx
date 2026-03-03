@@ -121,6 +121,31 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
                   {item.label}
                 </Link>
               ))}
+              {/* Município da Beira links (mobile) */}
+              <Link
+                href="/municipio/sobre"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`rounded-lg px-4 py-3 text-base font-medium ${
+                  pathname === "/municipio/sobre"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <span className="mr-3">📄</span>
+                Sobre o Município
+              </Link>
+              <Link
+                href="/municipio/organograma"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`rounded-lg px-4 py-3 text-base font-medium ${
+                  pathname === "/municipio/organograma"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <span className="mr-3">📊</span>
+                Organograma
+              </Link>
               {showDashboard && (
                 <Link
                   href="/dashboard"
