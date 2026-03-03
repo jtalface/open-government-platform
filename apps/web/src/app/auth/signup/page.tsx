@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button, Input } from "@ogp/ui";
+import { Logo } from "@/components/Logo";
 
 // Beira city bounding box
 const BEIRA_BOUNDING_BOX = {
@@ -155,7 +156,12 @@ export default function SignUpPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Open Government Platform</h1>
+          <div className="flex justify-center">
+            <Logo size="lg" fixedWidth={120} fixedHeight={120} className="justify-center" />
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+            Beira É Wawa
+          </h1>
           <p className="mt-2 text-gray-600">Criar uma nova conta</p>
         </div>
 

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { Logo } from "@/components/Logo";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -44,7 +45,12 @@ export default function SignInPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Open Government Platform</h1>
+          <div className="flex justify-center">
+            <Logo size="lg" fixedWidth={120} fixedHeight={120} className="justify-center" />
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+            Beira É Wawa
+          </h1>
           <p className="mt-2 text-gray-600">{t("auth.signInTitle")}</p>
         </div>
 

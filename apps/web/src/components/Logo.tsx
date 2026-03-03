@@ -7,6 +7,8 @@ interface LogoProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   textColor?: string; // Custom text color for role label
+  fixedWidth?: number;
+  fixedHeight?: number;
 }
 
 const sizeConfig = {
@@ -27,7 +29,14 @@ const sizeConfig = {
   },
 };
 
-export function Logo({ role, size = "md", className = "", textColor }: LogoProps) {
+export function Logo({
+  role,
+  size = "md",
+  className = "",
+  textColor,
+  fixedWidth,
+  fixedHeight,
+}: LogoProps) {
   const config = sizeConfig[size];
 
   // Determine text color based on role for better contrast
@@ -41,10 +50,10 @@ export function Logo({ role, size = "md", className = "", textColor }: LogoProps
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Image
-        src="/images/beira-logo.png"
+        src="/images/beira_logo.png"
         alt="Cidade da Beira"
-        width={config.width}
-        height={config.height}
+        width={fixedWidth ?? config.width}
+        height={fixedHeight ?? config.height}
         className="object-contain"
         priority
       />
