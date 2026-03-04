@@ -55,10 +55,10 @@ export interface SortParams {
 // ===========================================
 
 // Accept either a full URL (http/https) or a deployment-agnostic
-// relative path under /uploads (e.g. /uploads/incidents/filename.jpg).
+// relative path under /uploads or /api/uploads (for incident media).
 const mediaUrlSchema = z.union([
   z.string().url(),
-  z.string().regex(/^\/uploads\//, {
+  z.string().regex(/^\/(api\/)?uploads\//, {
     message: "Invalid url",
   }),
 ]);
