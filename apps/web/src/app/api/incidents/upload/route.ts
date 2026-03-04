@@ -69,12 +69,9 @@ export async function POST(request: NextRequest) {
     const filename = `incident-${timestamp}-${randomString}.${fileExtension}`;
 
     // Create uploads directory if it doesn't exist.
-    // Resolve the app root based on __dirname so it works with .next/server or .next/standalone.
-    const appsWebSegment = `${sep}apps${sep}web`;
-    const baseDir = __dirname;
-    const idx = baseDir.lastIndexOf(appsWebSegment);
-    const appRoot = idx !== -1 ? baseDir.slice(0, idx + appsWebSegment.length) : process.cwd();
-    const uploadsDir = join(appRoot, "public", "uploads", "incidents");
+    // PM2 runs the app with cwd = apps/web, so we can safely resolve
+    // the public directory relative to process.cwd().
+    const uploadsDir = join(process.cwd(), "public", "uploads", "incidents");
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
