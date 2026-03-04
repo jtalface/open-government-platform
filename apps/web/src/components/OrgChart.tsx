@@ -32,10 +32,10 @@ function OrgNodeCard({ node, onClick, hasChildren, isExpanded }: {
   return (
     <div
       onClick={onClick}
-      className="relative bg-white border-l-4 rounded-md p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full"
+      className="relative bg-white border-l-4 rounded-md p-2 md:p-3 pb-4 md:pb-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full"
       style={{ borderLeftColor: color }}
     >
-      <div className="text-xs md:text-sm font-semibold text-gray-900 text-center leading-tight">
+      <div className="text-xs md:text-sm font-semibold text-gray-900 text-center leading-tight break-words">
         {node.title}
       </div>
       {hasChildren && (
@@ -74,7 +74,8 @@ function NestedChildren({
 
   return (
     <div className={`mt-3 ${level > 0 ? "ml-4 pl-4 border-l-2 border-gray-200" : ""}`}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+      {/* Limit to 2 columns on large screens so cards stay wide and not too tall */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4 max-w-5xl">
         {children.map((node) => {
           const nodeChildren = data.filter((n) => n.parentId === node.id);
           const hasChildren = nodeChildren.length > 0;
@@ -264,7 +265,8 @@ export function OrgChart({
 
           {/* Children Nodes - Grid Layout with nested support */}
           {isRootExpanded && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
+            // Limit to 2 columns on large screens so top-level cards remain wider
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4 max-w-5xl mx-auto">
               {childrenNodes.map((node) => {
                 const nodeChildren = data.filter((n) => n.parentId === node.id);
                 const hasChildren = nodeChildren.length > 0;
