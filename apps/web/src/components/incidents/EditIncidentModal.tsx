@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@ogp/ui";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { normalizeIncidentMediaUrl } from "@/lib/media";
 
 interface EditIncidentModalProps {
   isOpen: boolean;
@@ -51,8 +52,9 @@ export function EditIncidentModal({
       }
       const firstImage = mediaArray.find((m: any) => m.type === "IMAGE");
       if (firstImage) {
-        setCurrentImageUrl(firstImage.url);
-        setImagePreview(firstImage.url);
+        const normalized = normalizeIncidentMediaUrl(firstImage.url);
+        setCurrentImageUrl(normalized);
+        setImagePreview(normalized);
       }
     }
   }, [initialData.media]);

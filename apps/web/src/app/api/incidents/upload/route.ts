@@ -82,9 +82,8 @@ export async function POST(request: NextRequest) {
     const filepath = join(uploadsDir, filename);
     await writeFile(filepath, buffer);
 
-    // Construct deployment-agnostic URL (relative to current origin)
-    // This avoids hardcoding hostnames/IPs so any deployment works automatically.
-    const publicUrl = `/uploads/incidents/${filename}`;
+    // Return an API URL that streams the image from disk.
+    const publicUrl = `/api/uploads/incidents/${filename}`;
 
     return NextResponse.json({
       success: true,

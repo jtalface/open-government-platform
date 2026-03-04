@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { VoteButtons } from "./VoteButtons";
 import { EditIncidentModal } from "./EditIncidentModal";
+import { normalizeIncidentMediaUrl } from "@/lib/media";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
@@ -163,15 +164,18 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
             <div className="mb-6 space-y-4">
               {mediaArray
                 .filter((m: any) => m.type === "IMAGE")
-                .map((media: any, index: number) => (
-                  <div key={index} className="relative rounded-lg overflow-hidden border border-gray-200">
-                    <img
-                      src={media.url}
-                      alt={`Foto da ocorrência ${index + 1}`}
-                      className="w-full h-auto max-h-96 object-contain bg-gray-50"
-                    />
-                  </div>
-                ))}
+                .map((media: any, index: number) => {
+                  const src = normalizeIncidentMediaUrl(media.url);
+                  return (
+                    <div key={index} className="relative rounded-lg overflow-hidden border border-gray-200">
+                      <img
+                        src={src}
+                        alt={`Foto da ocorrência ${index + 1}`}
+                        className="w-full h-auto max-h-96 object-contain bg-gray-50"
+                      />
+                    </div>
+                  );
+                })}
             </div>
           )}
 

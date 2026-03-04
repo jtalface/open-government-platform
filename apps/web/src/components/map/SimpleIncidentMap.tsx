@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { normalizeIncidentMediaUrl } from "@/lib/media";
 
 // Beira City Bounding Box
 const BEIRA_BOUNDS = {
@@ -216,13 +217,14 @@ export default function SimpleIncidentMap({
         }
       }
       const firstImage = mediaArray.find((m: any) => m.type === "IMAGE");
+      const imageUrl = firstImage ? normalizeIncidentMediaUrl(firstImage.url) : "";
 
       const popupContent = `
         <div style="padding: 8px; min-width: 200px; max-width: 300px;">
           ${firstImage ? `
             <div style="margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb;">
               <img 
-                src="${firstImage.url}" 
+                src="${imageUrl}" 
                 alt="${incident.title}"
                 style="width: 100%; height: 150px; object-fit: cover; display: block;"
               />

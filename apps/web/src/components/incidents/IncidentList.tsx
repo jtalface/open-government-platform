@@ -7,6 +7,7 @@ import { Card, Badge, LoadingSpinner } from "@ogp/ui";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { normalizeIncidentMediaUrl } from "@/lib/media";
 
 export function IncidentList() {
   const { t, locale } = useTranslation();
@@ -95,7 +96,7 @@ export function IncidentList() {
                   {firstImage ? (
                     <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
                       <img
-                        src={firstImage.url}
+                        src={normalizeIncidentMediaUrl(firstImage.url)}
                         alt={incident.title}
                         className="w-full h-full object-cover"
                       />
