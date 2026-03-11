@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { Poppins } from "next/font/google";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "@/components/Logo";
+
+const beiraTitleFont = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
 
 export default function SignInPage() {
   const router = useRouter();
@@ -48,7 +54,9 @@ export default function SignInPage() {
           <div className="flex justify-center">
             <Logo size="lg" fixedWidth={120} fixedHeight={120} className="justify-center" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+          <h1
+            className={`${beiraTitleFont.className} text-3xl font-semibold tracking-tight text-gray-900`}
+          >
             Beira É Wawa
           </h1>
           <p className="mt-2 text-gray-600">{t("auth.signInTitle")}</p>
@@ -95,6 +103,12 @@ export default function SignInPage() {
               </Link>
             </p>
           </div>
+        </div>
+
+        <div className="mt-6 text-center text-xs text-gray-400 space-y-1">
+          <p>
+            Criado por <span className="font-semibold text-gray-500">Zeus Technologies &copy; 2026</span>
+          </p>
         </div>
       </div>
     </div>
