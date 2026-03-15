@@ -12,6 +12,9 @@ const CreateCategorySchema = z.object({
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
+  vereador: z.string().nullable().optional(),
+  administrador: z.string().nullable().optional(),
+  responsavel: z.string().nullable().optional(),
   sortOrder: z.number().int().min(0).optional(),
 });
 
@@ -67,6 +70,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert empty strings to null before saving (null stays null, empty strings become null)
+    const vereador = input.vereador === "" || input.vereador === null ? null : input.vereador;
+    const administrador = input.administrador === "" || input.administrador === null ? null : input.administrador;
+    const responsavel = input.responsavel === "" || input.responsavel === null ? null : input.responsavel;
+
     const category = await prisma.category.create({
       data: {
         municipalityId: session!.user.municipalityId,
@@ -75,6 +83,9 @@ export async function POST(request: NextRequest) {
         description: input.description,
         icon: input.icon || "📂",
         color: input.color || "#6B7280",
+        vereador: vereador,
+        administrador: administrador,
+        responsavel: responsavel,
         sortOrder: input.sortOrder ?? 0,
         active: true,
       },

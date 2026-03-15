@@ -234,6 +234,9 @@ model Category {
   icon           String // Icon identifier (e.g., "health", "construction")
   color          String // Hex color
   description    String?
+  vereador       String? // Vereador responsible for this vereação
+  administrador  String? // Administrador responsible for this vereação
+  responsavel    String? // Responsável for this vereação
   active         Boolean  @default(true)
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())

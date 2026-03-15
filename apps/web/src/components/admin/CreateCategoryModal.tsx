@@ -15,6 +15,9 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("📂");
   const [color, setColor] = useState("#6B7280");
+  const [vereador, setVereador] = useState("");
+  const [administrador, setAdministrador] = useState("");
+  const [responsavel, setResponsavel] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
 
   const createMutation = useMutation({
@@ -45,6 +48,9 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
       description: description || undefined,
       icon: icon || "📂",
       color: color || "#6B7280",
+      vereador: vereador || null,
+      administrador: administrador || null,
+      responsavel: responsavel || null,
       sortOrder: parseInt(sortOrder) || 0,
     });
   };
@@ -153,6 +159,27 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
               rows={3}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Descrição da vereação..."
+            />
+          </div>
+
+          <div className="space-y-4">
+            <Input
+              label="Vereador"
+              value={vereador}
+              onChange={(e) => setVereador(e.target.value)}
+              placeholder="Nome do vereador"
+            />
+            <Input
+              label="Administrador"
+              value={administrador}
+              onChange={(e) => setAdministrador(e.target.value)}
+              placeholder="Nome do administrador"
+            />
+            <Input
+              label="Responsável"
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+              placeholder="Nome do responsável"
             />
           </div>
 

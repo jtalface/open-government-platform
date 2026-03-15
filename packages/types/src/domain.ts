@@ -70,6 +70,9 @@ export interface Category extends BaseEntity {
   icon: string;
   color: string;
   description?: string;
+  vereador?: string | null;
+  administrador?: string | null;
+  responsavel?: string | null;
   active: boolean;
   sortOrder: number;
 }

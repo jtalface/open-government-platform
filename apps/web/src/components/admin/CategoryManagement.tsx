@@ -13,6 +13,9 @@ interface Category {
   description?: string;
   icon: string;
   color: string;
+  vereador?: string | null;
+  administrador?: string | null;
+  responsavel?: string | null;
   sortOrder: number;
   active: boolean;
 }
@@ -52,12 +55,20 @@ export function CategoryManagement() {
       const res = await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete category");
-      return res.json();
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || "Failed to delete vereação");
+      }
+      return data;
     },
     onSuccess: () => {
+      // Invalidate and refetch to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.refetchQueries({ queryKey: ["admin-categories"] });
+    },
+    onError: (error: Error) => {
+      alert(error.message || "Erro ao eliminar vereação");
     },
   });
 
@@ -139,6 +150,13 @@ export function CategoryManagement() {
                       <div className="mt-1 truncate">{category.description}</div>
                     )}
                   </div>
+                  {(category.vereador || category.administrador || category.responsavel) && (
+                    <div className="mt-2 space-y-1 text-xs text-gray-600">
+                      {category.vereador && <div>Vereador: {category.vereador}</div>}
+                      {category.administrador && <div>Administrador: {category.administrador}</div>}
+                      {category.responsavel && <div>Responsável: {category.responsavel}</div>}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2">

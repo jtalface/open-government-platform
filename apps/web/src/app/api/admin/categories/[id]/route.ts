@@ -12,6 +12,9 @@ const UpdateCategorySchema = z.object({
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
+  vereador: z.string().nullable().optional(),
+  administrador: z.string().nullable().optional(),
+  responsavel: z.string().nullable().optional(),
   sortOrder: z.number().int().min(0).optional(),
   active: z.boolean().optional(),
 });
@@ -49,12 +52,24 @@ export async function PATCH(
       }
     }
 
+    // Convert empty strings to null before saving (null stays null, empty strings become null)
+    const updateData: any = { ...input };
+    if (updateData.vereador !== undefined) {
+      updateData.vereador = updateData.vereador === "" ? null : updateData.vereador;
+    }
+    if (updateData.administrador !== undefined) {
+      updateData.administrador = updateData.administrador === "" ? null : updateData.administrador;
+    }
+    if (updateData.responsavel !== undefined) {
+      updateData.responsavel = updateData.responsavel === "" ? null : updateData.responsavel;
+    }
+
     const category = await prisma.category.update({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
       },
-      data: input,
+      data: updateData,
     });
 
     // Create audit log

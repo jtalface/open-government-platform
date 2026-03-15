@@ -321,6 +321,7 @@ GET /api/categories
       "id": "uuid",
       "municipalityId": "uuid",
       "name": "Saúde Pública",
+      "slug": "saude-publica",
       "icon": "health",
       "color": "#EF4444",
       "description": "Questões de saúde pública e saneamento",
@@ -332,6 +333,19 @@ GET /api/categories
   ]
 }
 ```
+
+**Category Fields:**
+- `id` (string, UUID): Unique category identifier
+- `municipalityId` (string, UUID): Municipality this category belongs to
+- `name` (string): Display name of the category (e.g., "Saúde Pública")
+- `slug` (string): URL-friendly identifier, unique per municipality. Auto-generated from name (lowercase, spaces replaced with hyphens). Example: "Saúde Pública" → `"saude-publica"`. Used for potential future URL routing and API filtering.
+- `icon` (string): Icon identifier or emoji (e.g., "health", "🏥")
+- `color` (string): Hex color code (e.g., "#EF4444")
+- `description` (string, optional): Category description
+- `active` (boolean): Whether the category is active and visible
+- `sortOrder` (number): Display order (lower numbers appear first)
+- `createdAt` (string, ISO 8601): Creation timestamp
+- `updatedAt` (string, ISO 8601): Last update timestamp
 
 ### Tickets (Manager/Admin Only)
 
@@ -445,18 +459,31 @@ POST /api/admin/categories
 Content-Type: application/json
 ```
 
-**Note:** Implementation pending.
-
 **Request Body:**
 ```json
 {
   "name": "Transporte",
+  "slug": "transporte",
   "icon": "bus",
   "color": "#10B981",
   "description": "Questões de transporte público",
   "sortOrder": 5
 }
 ```
+
+**Required Fields:**
+- `name` (string): Category display name
+- `slug` (string): URL-friendly identifier, unique per municipality. If not provided, will be auto-generated from name (lowercase, spaces replaced with hyphens)
+
+**Optional Fields:**
+- `icon` (string): Icon identifier or emoji
+- `color` (string): Hex color code (e.g., "#10B981")
+- `description` (string): Category description
+- `sortOrder` (number): Display order (default: 0)
+
+**Validation:**
+- Slug must be unique within the municipality
+- Returns `400` error if slug already exists
 
 ## Error Codes
 

@@ -11,6 +11,9 @@ interface Category {
   description?: string;
   icon: string;
   color: string;
+  vereador?: string | null;
+  administrador?: string | null;
+  responsavel?: string | null;
   sortOrder: number;
   active: boolean;
 }
@@ -27,6 +30,9 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
   const [description, setDescription] = useState(category.description || "");
   const [icon, setIcon] = useState(category.icon);
   const [color, setColor] = useState(category.color);
+  const [vereador, setVereador] = useState(category.vereador || "");
+  const [administrador, setAdministrador] = useState(category.administrador || "");
+  const [responsavel, setResponsavel] = useState(category.responsavel || "");
   const [sortOrder, setSortOrder] = useState(category.sortOrder.toString());
   const [active, setActive] = useState(category.active);
 
@@ -58,6 +64,9 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
       description: description || undefined,
       icon: icon || "📂",
       color: color || "#6B7280",
+      vereador: vereador || null,
+      administrador: administrador || null,
+      responsavel: responsavel || null,
       sortOrder: parseInt(sortOrder) || 0,
       active,
     });
@@ -73,26 +82,29 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Editar Vereação</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-            type="button"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+      <div className="flex h-full max-h-[90vh] w-full max-w-md flex-col rounded-xl bg-white shadow-2xl">
+        <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Editar Vereação</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+              type="button"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Nome"
             value={name}
@@ -170,6 +182,27 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
             />
           </div>
 
+          <div className="space-y-4">
+            <Input
+              label="Vereador"
+              value={vereador}
+              onChange={(e) => setVereador(e.target.value)}
+              placeholder="Nome do vereador"
+            />
+            <Input
+              label="Administrador"
+              value={administrador}
+              onChange={(e) => setAdministrador(e.target.value)}
+              placeholder="Nome do administrador"
+            />
+            <Input
+              label="Responsável"
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+              placeholder="Nome do responsável"
+            />
+          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -197,7 +230,8 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
               ⚠️ {(updateMutation.error as Error).message}
             </p>
           )}
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
