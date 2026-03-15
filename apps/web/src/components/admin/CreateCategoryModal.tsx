@@ -68,26 +68,30 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Criar Vereação</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-            type="button"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+      <div className="flex h-full max-h-[90vh] w-full max-w-md flex-col rounded-xl bg-white shadow-2xl">
+        <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Criar Vereação</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+              type="button"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-4">
           <Input
             label="Nome"
             value={name}
@@ -258,20 +262,24 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancelar
-            </Button>
-            <Button type="submit" className="flex-1" isLoading={createMutation.isPending}>
-              Criar
-            </Button>
-          </div>
-
           {createMutation.isError && (
-            <p className="text-sm text-red-600">
+            <p className="mt-4 text-sm text-red-600">
               ⚠️ {(createMutation.error as Error).message}
             </p>
           )}
+            </div>
+          </div>
+
+          <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1" isLoading={createMutation.isPending}>
+                Criar
+              </Button>
+            </div>
+          </div>
         </form>
       </div>
     </div>

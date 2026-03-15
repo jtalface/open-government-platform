@@ -124,8 +124,9 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-4">
           <Input
             label="Nome"
             value={name}
@@ -307,24 +308,27 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
             <label htmlFor="active" className="text-sm font-medium text-gray-700">
               Vereação ativa
             </label>
+            </div>
+
+            {updateMutation.isError && (
+              <p className="mt-4 text-sm text-red-600">
+                ⚠️ {(updateMutation.error as Error).message}
+              </p>
+            )}
+            </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancelar
-            </Button>
-            <Button type="submit" className="flex-1" isLoading={updateMutation.isPending}>
-              Atualizar
-            </Button>
+          <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1" isLoading={updateMutation.isPending}>
+                Atualizar
+              </Button>
+            </div>
           </div>
-
-          {updateMutation.isError && (
-            <p className="text-sm text-red-600">
-              ⚠️ {(updateMutation.error as Error).message}
-            </p>
-          )}
-          </form>
-        </div>
+        </form>
       </div>
     </div>
   );
