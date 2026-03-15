@@ -31,6 +31,12 @@ export function DashboardStats() {
     );
   }
 
+  const avgResolutionTime = stats?.avgResolutionTime || {
+    triagem: "-",
+    resposta: "-",
+    resolucao: "-",
+  };
+
   const statCards = [
     {
       label: t("dashboard.openIncidents"),
@@ -52,9 +58,10 @@ export function DashboardStats() {
     },
     {
       label: t("dashboard.avgResolutionTime"),
-      value: stats?.avgResolutionTime || "-",
+      value: avgResolutionTime,
       icon: "⏱️",
       color: "text-purple-600",
+      isTimeObject: true,
     },
   ];
 
@@ -63,9 +70,26 @@ export function DashboardStats() {
       {statCards.map((stat) => (
         <Card key={stat.label} className="p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-              <p className={`mt-2 text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+              {stat.isTimeObject ? (
+                <div className="mt-2 space-y-1">
+                  <div className="text-lg font-semibold text-gray-900">
+                    <span className="text-purple-600">{t("dashboard.triagem")}:</span>{" "}
+                    <span className="font-bold">{avgResolutionTime.triagem}</span>
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    <span className="text-purple-600">{t("dashboard.resposta")}:</span>{" "}
+                    <span className="font-bold">{avgResolutionTime.resposta}</span>
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    <span className="text-purple-600">{t("dashboard.resolucao")}:</span>{" "}
+                    <span className="font-bold">{avgResolutionTime.resolucao}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className={`mt-2 text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+              )}
             </div>
             <div className="text-4xl">{stat.icon}</div>
           </div>

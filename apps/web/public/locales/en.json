@@ -173,6 +173,9 @@
     "resolvedIncidents": "Resolved",
     "totalTickets": "Total Tickets",
     "avgResolutionTime": "Avg. Time",
+    "triagem": "Triage",
+    "resposta": "Response",
+    "resolucao": "Resolution",
     "manageIncidents": "Incident Management",
     "manageIncidentsDescription": "View and triage all reported incidents",
     "viewIncidentMap": "View on map"

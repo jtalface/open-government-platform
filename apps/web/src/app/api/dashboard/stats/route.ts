@@ -36,11 +36,13 @@ export async function GET(request: NextRequest) {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    // Get counts
+    // Get counts and incidents for time calculations
     const [
       openIncidents,
       activeTickets,
       resolvedThisWeek,
+      triagedIncidents,
+      ticketedIncidents,
       resolvedIncidents,
     ] = await Promise.all([
       // Open incidents (OPEN, TRIAGED, TICKETED)
@@ -76,6 +78,34 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
+      // Get incidents currently in TRIAGED status to calculate average triage time
+      // Note: This calculates time from creation to when they reached TRIAGED status
+      // For incidents that progressed beyond TRIAGED, we don't have the exact timestamp
+      // when they were triaged, so we only count incidents currently in TRIAGED status
+      prisma.incidentEvent.findMany({
+        where: {
+          ...baseWhere,
+          status: "TRIAGED",
+        },
+        select: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      // Get incidents currently in TICKETED status to calculate average response time
+      // Note: This calculates time from creation to when they reached TICKETED status
+      // For incidents that progressed beyond TICKETED, we don't have the exact timestamp
+      // when they were ticketed, so we only count incidents currently in TICKETED status
+      prisma.incidentEvent.findMany({
+        where: {
+          ...baseWhere,
+          status: "TICKETED",
+        },
+        select: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
       // Get all resolved incidents to calculate average resolution time
       prisma.incidentEvent.findMany({
         where: {
@@ -89,24 +119,63 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // Calculate average resolution time
+    // Helper function to format time duration
+    const formatTimeDuration = (totalMs: number, count: number): string => {
+      if (count === 0) return "-";
+      
+      const avgMs = totalMs / count;
+      const avgDays = avgMs / (1000 * 60 * 60 * 24);
+      const avgHours = avgMs / (1000 * 60 * 60);
+      const avgMinutes = avgMs / (1000 * 60);
+
+      if (avgDays >= 1) {
+        return `${avgDays.toFixed(1)} dias`;
+      } else if (avgHours >= 1) {
+        return `${avgHours.toFixed(1)} horas`;
+      } else {
+        return `${avgMinutes.toFixed(0)} minutos`;
+      }
+    };
+
+    // Calculate average triage time (time to reach TRIAGED status)
+    let avgTriageTime = "-";
+    if (triagedIncidents.length > 0) {
+      const totalMs = triagedIncidents.reduce((sum, incident) => {
+        const diffMs = incident.updatedAt.getTime() - incident.createdAt.getTime();
+        return sum + diffMs;
+      }, 0);
+      avgTriageTime = formatTimeDuration(totalMs, triagedIncidents.length);
+    }
+
+    // Calculate average response time (time to reach TICKETED status)
+    let avgResponseTime = "-";
+    if (ticketedIncidents.length > 0) {
+      const totalMs = ticketedIncidents.reduce((sum, incident) => {
+        const diffMs = incident.updatedAt.getTime() - incident.createdAt.getTime();
+        return sum + diffMs;
+      }, 0);
+      avgResponseTime = formatTimeDuration(totalMs, ticketedIncidents.length);
+    }
+
+    // Calculate average resolution time (time to reach RESOLVED/CLOSED status)
     let avgResolutionTime = "-";
     if (resolvedIncidents.length > 0) {
-      const totalDays = resolvedIncidents.reduce((sum, incident) => {
-        if (!incident.updatedAt) return sum;
+      const totalMs = resolvedIncidents.reduce((sum, incident) => {
         const diffMs = incident.updatedAt.getTime() - incident.createdAt.getTime();
-        const diffDays = diffMs / (1000 * 60 * 60 * 24);
-        return sum + diffDays;
+        return sum + diffMs;
       }, 0);
-      const avgDays = totalDays / resolvedIncidents.length;
-      avgResolutionTime = `${avgDays.toFixed(1)} dias`;
+      avgResolutionTime = formatTimeDuration(totalMs, resolvedIncidents.length);
     }
 
     const stats = {
       openIncidents,
       activeTickets,
       resolvedThisWeek,
-      avgResolutionTime,
+      avgResolutionTime: {
+        triagem: avgTriageTime,
+        resposta: avgResponseTime,
+        resolucao: avgResolutionTime,
+      },
     };
 
     return successResponse(stats);
