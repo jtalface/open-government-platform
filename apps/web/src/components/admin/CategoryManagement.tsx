@@ -63,7 +63,7 @@ export function CategoryManagement() {
 
   const handleToggleActive = (id: string, currentActive: boolean, name: string) => {
     const action = currentActive ? "desativar" : "ativar";
-    if (confirm(`Tem a certeza que deseja ${action} a categoria "${name}"?`)) {
+    if (confirm(`Tem a certeza que deseja ${action} a vereação "${name}"?`)) {
       toggleActiveMutation.mutate({ id, active: !currentActive });
     }
   };
@@ -71,7 +71,7 @@ export function CategoryManagement() {
   const handleDelete = (id: string, name: string) => {
     if (
       confirm(
-        `Tem a certeza que deseja eliminar a categoria "${name}"? Esta ação não pode ser revertida.`
+        `Tem a certeza que deseja eliminar a vereação "${name}"? Esta ação não pode ser revertida.`
       )
     ) {
       deleteCategoryMutation.mutate(id);
@@ -93,7 +93,7 @@ export function CategoryManagement() {
       {/* Header */}
       <div className="flex justify-end">
         <Button onClick={() => setIsCreateModalOpen(true)}>
-          ➕ Criar Categoria
+          ➕ Criar Vereação
         </Button>
       </div>
 
@@ -101,7 +101,7 @@ export function CategoryManagement() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {categories.length === 0 ? (
           <Card className="col-span-full p-8 text-center">
-            <p className="text-gray-500">Nenhuma categoria encontrada</p>
+            <p className="text-gray-500">Nenhuma vereação encontrada</p>
           </Card>
         ) : (
           categories.map((category: any) => (

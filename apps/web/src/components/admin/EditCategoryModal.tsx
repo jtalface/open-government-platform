@@ -39,7 +39,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error?.message || "Falha ao atualizar categoria");
+        throw new Error(error.error?.message || "Falha ao atualizar vereação");
       }
       return res.json();
     },
@@ -75,7 +75,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Editar Categoria</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Editar Vereação</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -166,7 +166,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Descrição da categoria..."
+              placeholder="Descrição da vereação..."
             />
           </div>
 
@@ -179,7 +179,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <label htmlFor="active" className="text-sm font-medium text-gray-700">
-              Categoria ativa
+              Vereação ativa
             </label>
           </div>
 

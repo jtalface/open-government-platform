@@ -23,7 +23,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const otherLinks = [
-    { name: `← ${t("admin.backToManager")}`, href: "/dashboard", icon: "🔙" },
+    { name: `← ${t("admin.backToManager")}`, href: "/dashboard" },
   ];
 
   return (
@@ -131,7 +131,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
-                {item.icon} {item.name}
+                {item.name}
               </Link>
             ))}
           </div>

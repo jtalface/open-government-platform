@@ -230,7 +230,7 @@ export function EditIncidentModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Categoria <span className="text-red-500">*</span>
+              Vereação <span className="text-red-500">*</span>
             </label>
             <select
               value={categoryId}
@@ -238,7 +238,7 @@ export function EditIncidentModal({
               required
               className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Selecione uma categoria</option>
+              <option value="">Selecione uma vereação</option>
               {categories?.map((cat: any) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}

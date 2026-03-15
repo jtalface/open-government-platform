@@ -295,7 +295,7 @@ export default function SimpleIncidentMap({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
-                Categoria
+                Vereação
               </label>
               <select
                 value={selectedCategory}

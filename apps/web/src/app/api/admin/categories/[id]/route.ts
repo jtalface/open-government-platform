@@ -96,7 +96,7 @@ export async function DELETE(
       return Response.json(
         {
           error: {
-            message: `Não é possível eliminar esta categoria. Existem ${incidentCount} ocorrências associadas.`,
+            message: `Não é possível eliminar esta vereação. Existem ${incidentCount} ocorrências associadas.`,
           },
         },
         { status: 400 }
