@@ -6,6 +6,12 @@ import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { CreateCategoryModal } from "./CreateCategoryModal";
 import { EditCategoryModal } from "./EditCategoryModal";
 
+interface ContactInfo {
+  name: string;
+  phone: string;
+  email: string;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -13,9 +19,9 @@ interface Category {
   description?: string;
   icon: string;
   color: string;
-  vereador?: string | null;
-  administrador?: string | null;
-  responsavel?: string | null;
+  vereador?: ContactInfo | null;
+  administrador?: ContactInfo | null;
+  responsavel?: ContactInfo | null;
   sortOrder: number;
   active: boolean;
 }
@@ -151,10 +157,31 @@ export function CategoryManagement() {
                     )}
                   </div>
                   {(category.vereador || category.administrador || category.responsavel) && (
-                    <div className="mt-2 space-y-1 text-xs text-gray-600">
-                      {category.vereador && <div>Vereador: {category.vereador}</div>}
-                      {category.administrador && <div>Administrador: {category.administrador}</div>}
-                      {category.responsavel && <div>Responsável: {category.responsavel}</div>}
+                    <div className="mt-2 space-y-2 text-xs text-gray-600">
+                      {category.vereador && typeof category.vereador === "object" && category.vereador !== null && (
+                        <div className="rounded bg-gray-50 p-2">
+                          <div className="font-medium">Vereador:</div>
+                          <div>{category.vereador.name}</div>
+                          {category.vereador.phone && <div>📞 {category.vereador.phone}</div>}
+                          {category.vereador.email && <div>✉️ {category.vereador.email}</div>}
+                        </div>
+                      )}
+                      {category.administrador && typeof category.administrador === "object" && category.administrador !== null && (
+                        <div className="rounded bg-gray-50 p-2">
+                          <div className="font-medium">Administrador:</div>
+                          <div>{category.administrador.name}</div>
+                          {category.administrador.phone && <div>📞 {category.administrador.phone}</div>}
+                          {category.administrador.email && <div>✉️ {category.administrador.email}</div>}
+                        </div>
+                      )}
+                      {category.responsavel && typeof category.responsavel === "object" && category.responsavel !== null && (
+                        <div className="rounded bg-gray-50 p-2">
+                          <div className="font-medium">Responsável:</div>
+                          <div>{category.responsavel.name}</div>
+                          {category.responsavel.phone && <div>📞 {category.responsavel.phone}</div>}
+                          {category.responsavel.email && <div>✉️ {category.responsavel.email}</div>}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

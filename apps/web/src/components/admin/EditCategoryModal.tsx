@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input } from "@ogp/ui";
 
+interface ContactInfo {
+  name: string;
+  phone: string;
+  email: string;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -11,9 +17,9 @@ interface Category {
   description?: string;
   icon: string;
   color: string;
-  vereador?: string | null;
-  administrador?: string | null;
-  responsavel?: string | null;
+  vereador?: ContactInfo | null;
+  administrador?: ContactInfo | null;
+  responsavel?: ContactInfo | null;
   sortOrder: number;
   active: boolean;
 }
@@ -30,9 +36,21 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
   const [description, setDescription] = useState(category.description || "");
   const [icon, setIcon] = useState(category.icon);
   const [color, setColor] = useState(category.color);
-  const [vereador, setVereador] = useState(category.vereador || "");
-  const [administrador, setAdministrador] = useState(category.administrador || "");
-  const [responsavel, setResponsavel] = useState(category.responsavel || "");
+  const [vereador, setVereador] = useState(
+    category.vereador && typeof category.vereador === "object" && category.vereador !== null
+      ? { name: (category.vereador as any).name || "", phone: (category.vereador as any).phone || "", email: (category.vereador as any).email || "" }
+      : { name: "", phone: "", email: "" }
+  );
+  const [administrador, setAdministrador] = useState(
+    category.administrador && typeof category.administrador === "object" && category.administrador !== null
+      ? { name: (category.administrador as any).name || "", phone: (category.administrador as any).phone || "", email: (category.administrador as any).email || "" }
+      : { name: "", phone: "", email: "" }
+  );
+  const [responsavel, setResponsavel] = useState(
+    category.responsavel && typeof category.responsavel === "object" && category.responsavel !== null
+      ? { name: (category.responsavel as any).name || "", phone: (category.responsavel as any).phone || "", email: (category.responsavel as any).email || "" }
+      : { name: "", phone: "", email: "" }
+  );
   const [sortOrder, setSortOrder] = useState(category.sortOrder.toString());
   const [active, setActive] = useState(category.active);
 
@@ -58,15 +76,18 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Vereador and Responsavel are required, Administrador is optional
+    const administradorData = administrador.name || administrador.phone || administrador.email ? administrador : null;
+
     updateMutation.mutate({
       name,
       slug,
       description: description || undefined,
       icon: icon || "📂",
       color: color || "#6B7280",
-      vereador: vereador || null,
-      administrador: administrador || null,
-      responsavel: responsavel || null,
+      vereador, // Required - always send
+      administrador: administradorData, // Optional
+      responsavel, // Required - always send
       sortOrder: parseInt(sortOrder) || 0,
       active,
     });
@@ -123,7 +144,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 Ícone (Emoji)
               </label>
@@ -137,16 +158,16 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 Cor
               </label>
-              <div className="flex gap-2">
+              <div className="flex min-w-0 gap-2">
                 <input
                   type="color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="h-10 w-20 cursor-pointer rounded-lg border border-gray-300"
+                  className="h-10 w-16 shrink-0 cursor-pointer rounded-lg border border-gray-300"
                 />
                 <input
                   type="text"
@@ -154,7 +175,7 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
                   onChange={(e) => setColor(e.target.value)}
                   placeholder="#6B7280"
                   pattern="^#[0-9A-F]{6}$"
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 uppercase focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="min-w-0 flex-1 rounded-lg border border-gray-300 px-2 py-2 text-sm uppercase focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -182,25 +203,97 @@ export function EditCategoryModal({ category, onClose }: EditCategoryModalProps)
             />
           </div>
 
-          <div className="space-y-4">
-            <Input
-              label="Vereador"
-              value={vereador}
-              onChange={(e) => setVereador(e.target.value)}
-              placeholder="Nome do vereador"
-            />
-            <Input
-              label="Administrador"
-              value={administrador}
-              onChange={(e) => setAdministrador(e.target.value)}
-              placeholder="Nome do administrador"
-            />
-            <Input
-              label="Responsável"
-              value={responsavel}
-              onChange={(e) => setResponsavel(e.target.value)}
-              placeholder="Nome do responsável"
-            />
+          <div className="space-y-6">
+            {/* Vereador */}
+            <div className="rounded-lg border border-gray-200 p-4">
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">
+                Vereador <span className="text-red-500">*</span>
+              </h3>
+              <div className="space-y-3">
+                <Input
+                  label="Nome"
+                  value={vereador.name}
+                  onChange={(e) => setVereador({ ...vereador, name: e.target.value })}
+                  placeholder="Nome completo"
+                  required
+                />
+                <Input
+                  label="Telefone"
+                  type="tel"
+                  value={vereador.phone}
+                  onChange={(e) => setVereador({ ...vereador, phone: e.target.value })}
+                  placeholder="+258 84 123 4567"
+                  required
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={vereador.email}
+                  onChange={(e) => setVereador({ ...vereador, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Administrador */}
+            <div className="rounded-lg border border-gray-200 p-4">
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">Administrador</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Nome"
+                  value={administrador.name}
+                  onChange={(e) => setAdministrador({ ...administrador, name: e.target.value })}
+                  placeholder="Nome completo"
+                />
+                <Input
+                  label="Telefone"
+                  type="tel"
+                  value={administrador.phone}
+                  onChange={(e) => setAdministrador({ ...administrador, phone: e.target.value })}
+                  placeholder="+258 84 123 4567"
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={administrador.email}
+                  onChange={(e) => setAdministrador({ ...administrador, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+            </div>
+
+            {/* Responsável */}
+            <div className="rounded-lg border border-gray-200 p-4">
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">
+                Responsável <span className="text-red-500">*</span>
+              </h3>
+              <div className="space-y-3">
+                <Input
+                  label="Nome"
+                  value={responsavel.name}
+                  onChange={(e) => setResponsavel({ ...responsavel, name: e.target.value })}
+                  placeholder="Nome completo"
+                  required
+                />
+                <Input
+                  label="Telefone"
+                  type="tel"
+                  value={responsavel.phone}
+                  onChange={(e) => setResponsavel({ ...responsavel, phone: e.target.value })}
+                  placeholder="+258 84 123 4567"
+                  required
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={responsavel.email}
+                  onChange={(e) => setResponsavel({ ...responsavel, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

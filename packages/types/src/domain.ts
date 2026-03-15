@@ -62,6 +62,15 @@ export interface User extends BaseEntity {
 }
 
 /**
+ * Contact information for vereação responsible persons
+ */
+export interface ContactInfo {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+/**
  * Incident category
  */
 export interface Category extends BaseEntity {
@@ -70,9 +79,9 @@ export interface Category extends BaseEntity {
   icon: string;
   color: string;
   description?: string;
-  vereador?: string | null;
-  administrador?: string | null;
-  responsavel?: string | null;
+  vereador?: ContactInfo | null;
+  administrador?: ContactInfo | null;
+  responsavel?: ContactInfo | null;
   active: boolean;
   sortOrder: number;
 }

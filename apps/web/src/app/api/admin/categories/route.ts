@@ -6,15 +6,21 @@ import { successResponse, handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 import { z } from "zod";
 
+const ContactInfoSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  phone: z.string().min(1, "Telefone é obrigatório"),
+  email: z.string().email("Email inválido"),
+});
+
 const CreateCategorySchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   slug: z.string().min(1, "Slug é obrigatório"),
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
-  vereador: z.string().nullable().optional(),
-  administrador: z.string().nullable().optional(),
-  responsavel: z.string().nullable().optional(),
+  vereador: ContactInfoSchema,
+  administrador: ContactInfoSchema.nullable().optional(),
+  responsavel: ContactInfoSchema,
   sortOrder: z.number().int().min(0).optional(),
 });
 
@@ -70,10 +76,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert empty strings to null before saving (null stays null, empty strings become null)
-    const vereador = input.vereador === "" || input.vereador === null ? null : input.vereador;
-    const administrador = input.administrador === "" || input.administrador === null ? null : input.administrador;
-    const responsavel = input.responsavel === "" || input.responsavel === null ? null : input.responsavel;
+    // Convert to JSON for Prisma (null stays null, objects become JSON)
+    const vereador = input.vereador === null || input.vereador === undefined ? null : input.vereador;
+    const administrador = input.administrador === null || input.administrador === undefined ? null : input.administrador;
+    const responsavel = input.responsavel === null || input.responsavel === undefined ? null : input.responsavel;
 
     const category = await prisma.category.create({
       data: {
@@ -83,9 +89,9 @@ export async function POST(request: NextRequest) {
         description: input.description,
         icon: input.icon || "📂",
         color: input.color || "#6B7280",
-        vereador: vereador,
-        administrador: administrador,
-        responsavel: responsavel,
+        vereador: vereador as any,
+        administrador: administrador as any,
+        responsavel: responsavel as any,
         sortOrder: input.sortOrder ?? 0,
         active: true,
       },

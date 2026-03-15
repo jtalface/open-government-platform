@@ -6,15 +6,21 @@ import { successResponse, handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 import { z } from "zod";
 
+const ContactInfoSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  phone: z.string().min(1, "Telefone é obrigatório"),
+  email: z.string().email("Email inválido"),
+});
+
 const UpdateCategorySchema = z.object({
   name: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um código hexadecimal válido").optional(),
-  vereador: z.string().nullable().optional(),
-  administrador: z.string().nullable().optional(),
-  responsavel: z.string().nullable().optional(),
+  vereador: ContactInfoSchema.optional(),
+  administrador: ContactInfoSchema.nullable().optional(),
+  responsavel: ContactInfoSchema.optional(),
   sortOrder: z.number().int().min(0).optional(),
   active: z.boolean().optional(),
 });
@@ -52,16 +58,16 @@ export async function PATCH(
       }
     }
 
-    // Convert empty strings to null before saving (null stays null, empty strings become null)
+    // Convert to JSON for Prisma (null stays null, objects become JSON)
     const updateData: any = { ...input };
     if (updateData.vereador !== undefined) {
-      updateData.vereador = updateData.vereador === "" ? null : updateData.vereador;
+      updateData.vereador = updateData.vereador === null ? null : updateData.vereador;
     }
     if (updateData.administrador !== undefined) {
-      updateData.administrador = updateData.administrador === "" ? null : updateData.administrador;
+      updateData.administrador = updateData.administrador === null ? null : updateData.administrador;
     }
     if (updateData.responsavel !== undefined) {
-      updateData.responsavel = updateData.responsavel === "" ? null : updateData.responsavel;
+      updateData.responsavel = updateData.responsavel === null ? null : updateData.responsavel;
     }
 
     const category = await prisma.category.update({
