@@ -132,7 +132,11 @@
     "status_triaged": "Triaged",
     "status_ticketed": "In Resolution",
     "status_resolved": "Resolved",
-    "status_closed": "Closed"
+    "status_closed": "Closed",
+    "comments": "Comments",
+    "addCommentPlaceholder": "Add a comment...",
+    "postComment": "Post Comment",
+    "noComments": "No comments yet. Be the first to comment!"
   },
   "tickets": {
     "title": "Tickets",

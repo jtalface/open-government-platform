@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { VoteButtons } from "./VoteButtons";
 import { EditIncidentModal } from "./EditIncidentModal";
+import { IncidentComments } from "./IncidentComments";
 import { normalizeIncidentMediaUrl } from "@/lib/media";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
@@ -258,6 +259,11 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
             </div>
           </div>
         )}
+
+        {/* Comments Section */}
+        <div className="border-t bg-white p-6">
+          <IncidentComments incidentId={incidentId} />
+        </div>
       </Card>
 
       {/* Edit Modal */}

@@ -132,6 +132,7 @@ model Municipality {
   votes            Vote[]
   auditLogs        AuditLog[]
   officialChannels OfficialChannel[]
+  incidentComments IncidentComment[]
   channelPosts     ChannelPost[]
   projects         Project[]
   projectUpdates   ProjectUpdate[]
@@ -167,6 +168,7 @@ model User {
   createdTickets     Ticket[]            @relation("CreatedTickets")
   assignedTickets    Ticket[]            @relation("AssignedTickets")
   ticketUpdates      TicketUpdate[]
+  incidentComments   IncidentComment[]
   auditLogs          AuditLog[]
   accounts           Account[]
   sessions           Session[]
@@ -307,6 +309,7 @@ model IncidentEvent {
   neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id])
   ticket       Ticket?
   votes        Vote[]
+  comments     IncidentComment[]
 
   @@index([municipalityId])
   @@index([categoryId])
@@ -341,6 +344,27 @@ model Vote {
   @@index([municipalityId])
   @@index([neighborhoodId])
   @@map("votes")
+}
+
+model IncidentComment {
+  id             String   @id @default(uuid())
+  incidentId     String
+  authorUserId   String
+  municipalityId String
+  message        String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  incident IncidentEvent @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  author   User          @relation(fields: [authorUserId], references: [id])
+  municipality Municipality @relation(fields: [municipalityId], references: [id])
+
+  @@index([incidentId])
+  @@index([authorUserId])
+  @@index([municipalityId])
+  @@index([createdAt(sort: Desc)])
+  @@map("incident_comments")
 }
 
 model Ticket {

@@ -132,7 +132,11 @@
     "status_triaged": "Triado",
     "status_ticketed": "Em Resolução",
     "status_resolved": "Resolvido",
-    "status_closed": "Fechado"
+    "status_closed": "Fechado",
+    "comments": "Comentários",
+    "addCommentPlaceholder": "Adicione um comentário...",
+    "postComment": "Publicar Comentário",
+    "noComments": "Ainda não há comentários. Seja o primeiro a comentar!"
   },
   "tickets": {
     "title": "Senhas",
