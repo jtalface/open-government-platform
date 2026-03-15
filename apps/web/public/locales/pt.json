@@ -28,6 +28,7 @@
     "publish": "Publicar",
     "postingAs": "Publicando como",
     "noCategory": "Sem vereação",
+    "selectCategory": "Selecione uma vereação",
     "optional": "opcional",
     "notSet": "Não definido"
   },
@@ -268,6 +269,7 @@
     "unarchiveProject": "Desarquivar Projeto",
     "projectTitle": "Título do Projeto",
     "projectDescription": "Descrição do Projeto",
+    "category": "Vereação",
     "status": "Estado",
     "budget": "Orçamento",
     "budgetCurrency": "Moeda",

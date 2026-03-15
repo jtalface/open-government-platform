@@ -7,10 +7,10 @@ import { prisma } from "@ogp/database";
 import type { ProjectStatus } from "@prisma/client";
 
 export interface CreateProjectInput {
-  ticketId: string;
+  ticketId?: string; // Optional - can create project without ticket
   title: string;
   description: string;
-  categoryId?: string;
+  categoryId: string;
   budgetAmount?: number;
   budgetCurrency?: string;
   fundingSource?: string;
@@ -174,54 +174,62 @@ export async function getProjectById(projectId: string) {
 }
 
 /**
- * Create a project from a ticket (Admin only)
+ * Create a project (Admin only)
+ * Can be created from a ticket or standalone
  */
-export async function createProjectFromTicket(
+export async function createProject(
   input: CreateProjectInput,
-  adminUserId: string
+  adminUserId: string,
+  municipalityId: string
 ) {
-  // Check if ticket exists and get its details
-  const ticket = await prisma.ticket.findUnique({
-    where: { id: input.ticketId },
-    select: {
-      id: true,
-      municipalityId: true,
-      categoryId: true,
-      title: true,
-    },
-  });
-
-  if (!ticket) {
-    throw new Error("Ticket not found");
-  }
-
-  // Check if project already exists for this ticket
-  const existingProject = await prisma.project.findUnique({
-    where: { ticketId: input.ticketId },
-  });
-
-  if (existingProject) {
-    throw new Error("Project already exists for this ticket");
-  }
-
   // Verify admin can manage projects in this municipality
-  const canManage = await canManageProjects(adminUserId, ticket.municipalityId);
+  const canManage = await canManageProjects(adminUserId, municipalityId);
   if (!canManage) {
     throw new Error("Only admins can create projects");
+  }
+
+  // If ticketId is provided, validate ticket and check for existing project
+  if (input.ticketId) {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: input.ticketId },
+      select: {
+        id: true,
+        municipalityId: true,
+        categoryId: true,
+        title: true,
+      },
+    });
+
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+
+    if (ticket.municipalityId !== municipalityId) {
+      throw new Error("Ticket does not belong to this municipality");
+    }
+
+    // Check if project already exists for this ticket
+    const existingProject = await prisma.project.findUnique({
+      where: { ticketId: input.ticketId },
+    });
+
+    if (existingProject) {
+      throw new Error("Project already exists for this ticket");
+    }
   }
 
   // Create the project
   return prisma.project.create({
     data: {
-      municipalityId: ticket.municipalityId,
-      ticketId: input.ticketId,
-      categoryId: input.categoryId || ticket.categoryId,
-      title: input.title || ticket.title,
+      municipalityId,
+      ticketId: input.ticketId || null,
+      categoryId: input.categoryId,
+      title: input.title,
       description: input.description,
-      budgetAmount: input.budgetAmount,
-      budgetCurrency: input.budgetCurrency,
-      fundingSource: input.fundingSource,
-      biddingReference: input.biddingReference,
+      budgetAmount: input.budgetAmount || null,
+      budgetCurrency: input.budgetCurrency || "MZN",
+      fundingSource: input.fundingSource || null,
+      biddingReference: input.biddingReference || null,
       createdByUserId: adminUserId,
     },
     include: {
@@ -235,6 +243,32 @@ export async function createProjectFromTicket(
       },
     },
   });
+}
+
+/**
+ * Create a project from a ticket (Admin only)
+ * @deprecated Use createProject instead
+ */
+export async function createProjectFromTicket(
+  input: CreateProjectInput,
+  adminUserId: string
+) {
+  if (!input.ticketId) {
+    throw new Error("ticketId is required for createProjectFromTicket");
+  }
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: input.ticketId },
+    select: {
+      municipalityId: true,
+    },
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  return createProject(input, adminUserId, ticket.municipalityId);
 }
 
 /**

@@ -1,26 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Modal, Button } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
-interface EditProjectModalProps {
-  project: any;
+interface CreateStandaloneProjectModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function EditProjectModal({ project, onClose, onSuccess }: EditProjectModalProps) {
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+}
+
+export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: CreateStandaloneProjectModalProps) {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    title: project.title || "",
-    description: project.description || "",
-    budgetAmount: project.budgetAmount || "",
-    budgetCurrency: project.budgetCurrency || "MZN",
-    fundingSource: project.fundingSource || "",
-    biddingReference: project.biddingReference || "",
-    assignedToName: project.assignedToName || "",
+    title: "",
+    description: "",
+    categoryId: "",
+    budgetAmount: "",
+    budgetCurrency: "MZN",
+    fundingSource: "",
+    biddingReference: "",
+  });
+
+  // Fetch categories
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/categories");
+      const data = await res.json();
+      return data.data || [];
+    },
+    enabled: isOpen,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,32 +47,49 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/projects/${project.id}`, {
-        method: "PATCH",
+      const res = await fetch("/api/projects", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount as any) : null,
+          budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : undefined,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update project");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || error.error?.message || "Failed to create project");
+      }
 
+      alert(t("projects.projectCreated"));
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        categoryId: "",
+        budgetAmount: "",
+        budgetCurrency: "MZN",
+        fundingSource: "",
+        biddingReference: "",
+      });
       onSuccess();
-    } catch (error) {
-      console.error("Error updating project:", error);
-      alert(t("projects.errorUpdating"));
+      onClose();
+    } catch (error: any) {
+      console.error("Error creating project:", error);
+      alert(error.message || t("projects.errorCreating"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen onClose={onClose} title={t("projects.editProject")}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t("projects.createProject")}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            {t("projects.projectTitle")}
+            {t("projects.projectTitle")} *
           </label>
           <input
             type="text"
@@ -66,7 +102,26 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            {t("projects.projectDescription")}
+            {t("projects.category")} *
+          </label>
+          <select
+            value={formData.categoryId}
+            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+            required
+          >
+            <option value="">{t("common.selectCategory")}</option>
+            {categories?.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            {t("projects.projectDescription")} *
           </label>
           <textarea
             value={formData.description}
@@ -131,28 +186,15 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {t("projects.contractor")}
-          </label>
-          <input
-            type="text"
-            value={formData.assignedToName}
-            onChange={(e) => setFormData({ ...formData, assignedToName: e.target.value })}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
-          />
-        </div>
-
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("common.save")}
+            {isSubmitting ? t("common.loading") : t("common.create")}
           </Button>
         </div>
       </form>
     </Modal>
   );
 }
-

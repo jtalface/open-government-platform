@@ -18,7 +18,7 @@ export function CreateProjectModal({ ticket, onClose, onSuccess }: CreateProject
     description: ticket.description || "",
     categoryId: ticket.categoryId || "",
     budgetAmount: "",
-    budgetCurrency: "EUR",
+    budgetCurrency: "MZN",
     fundingSource: "",
     biddingReference: "",
   });
@@ -103,12 +103,15 @@ export function CreateProjectModal({ ticket, onClose, onSuccess }: CreateProject
             <label className="block text-sm font-medium text-gray-700">
               {t("projects.budgetCurrency")}
             </label>
-            <input
-              type="text"
+            <select
               value={formData.budgetCurrency}
               onChange={(e) => setFormData({ ...formData, budgetCurrency: e.target.value })}
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
-            />
+            >
+              <option value="MZN">MZN</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
           </div>
         </div>
 

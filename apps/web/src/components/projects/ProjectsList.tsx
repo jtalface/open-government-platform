@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LoadingSpinner } from "@ogp/ui";
+import { useSession } from "next-auth/react";
+import { LoadingSpinner, Button } from "@ogp/ui";
 import { ProjectCard } from "./ProjectCard";
+import { CreateStandaloneProjectModal } from "./CreateStandaloneProjectModal";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 interface Project {
@@ -28,9 +30,13 @@ type TabType = "ongoing" | "completed" | "archived";
 
 export function ProjectsList() {
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<TabType>("ongoing");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["projects", activeTab],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -79,23 +85,31 @@ export function ProjectsList() {
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
-                activeTab === tab.key
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div className="border-b border-gray-200 flex-1">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
+                  activeTab === tab.key
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {isAdmin && (
+          <Button onClick={() => setIsCreateModalOpen(true)} className="ml-6">
+            ➕ {t("projects.createProject")}
+          </Button>
+        )}
       </div>
 
       {/* Projects Grid */}
@@ -113,6 +127,18 @@ export function ProjectsList() {
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>
+      )}
+
+      {/* Create Project Modal */}
+      {isCreateModalOpen && (
+        <CreateStandaloneProjectModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            refetch();
+            setIsCreateModalOpen(false);
+          }}
+        />
       )}
     </div>
   );

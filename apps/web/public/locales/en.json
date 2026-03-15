@@ -28,6 +28,7 @@
     "publish": "Publish",
     "postingAs": "Posting as",
     "noCategory": "No category",
+    "selectCategory": "Select a category",
     "optional": "optional",
     "notSet": "Not set"
   },
@@ -268,6 +269,7 @@
     "unarchiveProject": "Unarchive Project",
     "projectTitle": "Project Title",
     "projectDescription": "Project Description",
+    "category": "Category",
     "status": "Status",
     "budget": "Budget",
     "budgetCurrency": "Currency",
