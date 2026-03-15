@@ -38,6 +38,8 @@ prisma/migrations
 *.swp
 *.swo
 *~
+*.bak
+*.bak2
 
 # OS
 Thumbs.db
