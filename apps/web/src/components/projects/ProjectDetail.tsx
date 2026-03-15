@@ -42,6 +42,8 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
   });
 
   const isAdmin = session?.user?.role === "ADMIN";
+  const isManager =
+    session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN";
 
   const handleArchive = async () => {
     if (!confirm(t("projects.archiveProject") + "?")) return;
@@ -253,26 +255,47 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
         </Card>
       </div>
 
-      {/* Linked Ticket */}
-      {project.ticket && (
-        <Card className="p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            {t("projects.linkedTicket")}
-          </h2>
-          <Link
-            href={`/dashboard/tickets/${project.ticket.id}`}
-            className="block rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">{project.ticket.title}</h3>
-                <p className="mt-1 text-sm text-gray-600">{project.ticket.description}</p>
+      {/* Linked Ticket/Incident */}
+      {project.ticket &&
+        ((isManager && (
+          <Card className="p-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+              {t("projects.linkedTicket")}
+            </h2>
+            <Link
+              href={`/dashboard/tickets/${project.ticket.id}`}
+              className="block rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">{project.ticket.title}</h3>
+                  <p className="mt-1 text-sm text-gray-600">{project.ticket.description}</p>
+                </div>
+                <span className="text-blue-600">→</span>
               </div>
-              <span className="text-blue-600">→</span>
-            </div>
-          </Link>
-        </Card>
-      )}
+            </Link>
+          </Card>
+        )) ||
+          (!isManager &&
+            project.ticket.incidentId && (
+              <Card className="p-6">
+                <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                  {t("projects.linkedIncident")}
+                </h2>
+                <Link
+                  href={`/incidents/${project.ticket.incidentId}`}
+                  className="block rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{project.ticket.title}</h3>
+                      <p className="mt-1 text-sm text-gray-600">{project.ticket.description}</p>
+                    </div>
+                    <span className="text-blue-600">→</span>
+                  </div>
+                </Link>
+              </Card>
+            )))}
 
       {/* Project Updates */}
       {project.updates && project.updates.length > 0 && (

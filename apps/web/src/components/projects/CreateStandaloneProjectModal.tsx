@@ -57,8 +57,21 @@ export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: Cre
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || error.error?.message || "Failed to create project");
+        let errorMessage = "Failed to create project";
+        const contentType = res.headers.get("content-type");
+        try {
+          if (contentType?.includes("application/json")) {
+            const error = await res.json();
+            errorMessage = error.message || error.error?.message || errorMessage;
+          } else {
+            const text = await res.text();
+            errorMessage = text || errorMessage;
+          }
+        } catch (e) {
+          // If parsing fails, use default message
+          errorMessage = `Error ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       alert(t("projects.projectCreated"));

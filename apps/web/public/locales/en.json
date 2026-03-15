@@ -278,6 +278,7 @@
     "assignedTo": "Assigned to",
     "contractor": "Contractor",
     "linkedTicket": "Linked Ticket",
+    "linkedIncident": "Linked Incident",
     "createdBy": "Created by",
     "createdAt": "Created at",
     "updatedAt": "Updated at",

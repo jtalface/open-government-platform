@@ -148,6 +148,7 @@ export async function getProjectById(projectId: string) {
           title: true,
           status: true,
           description: true,
+          incidentId: true,
         },
       },
       createdBy: {

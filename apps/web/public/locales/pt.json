@@ -278,6 +278,7 @@
     "assignedTo": "Atribuído a",
     "contractor": "Empreiteiro",
     "linkedTicket": "Senha Associada",
+    "linkedIncident": "Ocorrência Associada",
     "createdBy": "Criado por",
     "createdAt": "Criado em",
     "updatedAt": "Atualizado em",
