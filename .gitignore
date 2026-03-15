@@ -44,3 +44,5 @@ prisma/migrations
 # OS
 Thumbs.db
 
+# User uploads (should not be in version control)
+apps/web/public/uploads/
