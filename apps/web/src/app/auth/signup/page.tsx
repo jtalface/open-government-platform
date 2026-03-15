@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { Button, Input } from "@ogp/ui";
 import { Logo } from "@/components/Logo";
+import { ZeusBranding } from "@/components/ZeusBranding";
 
 const beiraTitleFont = Poppins({
   subsets: ["latin"],
@@ -241,11 +242,7 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-gray-400 space-y-1">
-          <p>
-            Criado por <span className="font-semibold text-gray-500">Zeus Technologies &copy; 2026</span>
-          </p>
-        </div>
+        <ZeusBranding />
       </div>
     </div>
   );
