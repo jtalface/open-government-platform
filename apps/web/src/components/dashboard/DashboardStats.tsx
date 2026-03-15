@@ -1,23 +1,35 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Card } from "@ogp/ui";
+import { useSearchParams } from "next/navigation";
+import { Card, LoadingSpinner } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 export function DashboardStats() {
   const { t } = useTranslation();
-  const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("categoryId") || "";
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["dashboard-stats", categoryId],
     queryFn: async () => {
-      // TODO: Implement stats API endpoint
-      return {
-        openIncidents: 12,
-        activeTickets: 8,
-        resolvedThisWeek: 15,
-        avgResolutionTime: "3.5 dias",
-      };
+      const url = categoryId 
+        ? `/api/dashboard/stats?categoryId=${categoryId}`
+        : "/api/dashboard/stats";
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      const data = await response.json();
+      return data.data;
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   const statCards = [
     {

@@ -19,14 +19,18 @@ const SimpleIncidentMap = dynamic(
   }
 );
 
+interface IncidentMapProps {
+  categoryId?: string;
+}
+
 /**
  * Dashboard incident map component
  * Shows all incidents on an interactive map with filters
  */
-export function IncidentMap() {
+export function IncidentMap({ categoryId }: IncidentMapProps) {
   return (
     <div className="h-[500px] w-full">
-      <SimpleIncidentMap showFilters={false} />
+      <SimpleIncidentMap showFilters={false} categoryId={categoryId} />
     </div>
   );
 }

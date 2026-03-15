@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { IncidentMap } from "./IncidentMap";
 
 export function DashboardMapSection() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("categoryId") || undefined;
 
   return (
     <div className="rounded-xl bg-white p-6 shadow-sm">
@@ -18,7 +21,7 @@ export function DashboardMapSection() {
           {t("dashboard.viewFullMap")} →
         </Link>
       </div>
-      <IncidentMap />
+      <IncidentMap categoryId={categoryId} />
     </div>
   );
 }
