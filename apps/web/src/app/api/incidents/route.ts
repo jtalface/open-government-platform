@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { requireAuth } from "@/lib/auth/rbac";
@@ -90,6 +90,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Beira City Bounding Box
+const BEIRA_BOUNDS = {
+  minLat: -19.88,  // South
+  maxLat: -19.66,  // North
+  minLng: 34.78,   // West
+  maxLng: 34.91,   // East
+};
+
+function isWithinBeiraBounds(lat: number, lng: number): boolean {
+  return (
+    lat >= BEIRA_BOUNDS.minLat &&
+    lat <= BEIRA_BOUNDS.maxLat &&
+    lng >= BEIRA_BOUNDS.minLng &&
+    lng <= BEIRA_BOUNDS.maxLng
+  );
+}
+
 /**
  * POST /api/incidents
  * Create a new incident
@@ -101,6 +118,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const input = CreateIncidentSchema.parse(body);
+
+    // Validate geofencing - must be within Beira bounds
+    if (!isWithinBeiraBounds(input.location.lat, input.location.lng)) {
+      return NextResponse.json(
+        {
+          error: {
+            message: "Não é possível criar ocorrências fora dos limites da cidade de Beira. Por favor, certifique-se de que está dentro da área da cidade.",
+            code: "LOCATION_OUT_OF_BOUNDS",
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     const incident = await createIncident(
       session!.user.id,

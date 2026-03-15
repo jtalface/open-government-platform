@@ -60,9 +60,9 @@ export function CreateIncidentForm() {
 
     const timeoutId = setTimeout(() => {
       if (locationStatus === "loading") {
-        setLocationError("Tempo esgotado. Usando localização padrão (Beira).");
-        setLocation(DEFAULT_LOCATION);
-        setLocationStatus("manual");
+        setLocationError("Tempo esgotado ao obter localização. Por favor, tente novamente.");
+        setLocation(null);
+        setLocationStatus("error");
       }
     }, 10000); // 10 second timeout
 
@@ -78,10 +78,10 @@ export function CreateIncidentForm() {
           setLocationError("");
           setLocationStatus("success");
         } else {
-          // User is outside Beira - use default location
-          setLocation(DEFAULT_LOCATION);
-          setLocationError("Localização fora dos limites da cidade de Beira. Usando localização padrão.");
-          setLocationStatus("manual");
+          // User is outside Beira - don't allow incident creation
+          setLocation(null);
+          setLocationError("Você está fora dos limites da cidade de Beira. Não é possível criar ocorrências fora da área da cidade.");
+          setLocationStatus("error");
         }
       },
       (error) => {
@@ -100,9 +100,9 @@ export function CreateIncidentForm() {
             break;
         }
         
-        setLocationError(`${errorMessage} Usando localização padrão (Beira).`);
-        setLocation(DEFAULT_LOCATION);
-        setLocationStatus("manual");
+        setLocationError(`${errorMessage} Por favor, permita o acesso à localização para criar uma ocorrência.`);
+        setLocation(null);
+        setLocationStatus("error");
       },
       {
         enableHighAccuracy: false,
@@ -205,7 +205,14 @@ export function CreateIncidentForm() {
       });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error?.message || "Falha ao criar ocorrência");
+        const errorMessage = errorData.error?.message || "Falha ao criar ocorrência";
+        // If it's a geofencing error, set location error
+        if (errorData.error?.code === "LOCATION_OUT_OF_BOUNDS") {
+          setLocationError(errorMessage);
+          setLocation(null);
+          setLocationStatus("error");
+        }
+        throw new Error(errorMessage);
       }
       return res.json();
     },
@@ -219,6 +226,13 @@ export function CreateIncidentForm() {
 
     if (!location) {
       setLocationError("Localização necessária para criar ocorrência");
+      return;
+    }
+
+    // Double-check geofencing before submission
+    if (!isWithinBeiraBounds(location.lat, location.lng)) {
+      setLocationError("Você está fora dos limites da cidade de Beira. Não é possível criar ocorrências fora da área da cidade.");
+      setLocationStatus("error");
       return;
     }
 

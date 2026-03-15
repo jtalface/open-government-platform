@@ -60,8 +60,8 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
       if ("geolocation" in navigator) {
         const timeoutId = setTimeout(() => {
           if (!location) {
-            setLocationError("Tempo esgotado. Usando localização padrão.");
-            setLocation(DEFAULT_LOCATION);
+            setLocationError("Tempo esgotado ao obter localização. Por favor, tente novamente.");
+            setLocation(null);
           }
         }, 10000);
 
@@ -76,15 +76,15 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
               setLocation({ lat: userLat, lng: userLng });
               setLocationError("");
             } else {
-              // User is outside Beira - use default location
-              setLocation(DEFAULT_LOCATION);
-              setLocationError("Fora dos limites de Beira. Usando padrão.");
+              // User is outside Beira - don't allow incident creation
+              setLocation(null);
+              setLocationError("Você está fora dos limites da cidade de Beira. Não é possível criar ocorrências fora da área da cidade.");
             }
           },
           (error) => {
             clearTimeout(timeoutId);
-            setLocationError("Usando localização padrão (Beira)");
-            setLocation(DEFAULT_LOCATION);
+            setLocationError("Não foi possível obter sua localização. Por favor, permita o acesso à localização para criar uma ocorrência.");
+            setLocation(null);
           },
           {
             enableHighAccuracy: false,
@@ -95,8 +95,8 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
 
         return () => clearTimeout(timeoutId);
       } else {
-        setLocation(DEFAULT_LOCATION);
-        setLocationError("Geolocalização não suportada. Usando padrão.");
+        setLocation(null);
+        setLocationError("Geolocalização não suportada pelo navegador. Por favor, use um navegador que suporte geolocalização.");
       }
     }
   }, [isOpen, location]);
@@ -192,7 +192,13 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
       });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error?.message || "Falha ao criar ocorrência");
+        const errorMessage = errorData.error?.message || "Falha ao criar ocorrência";
+        // If it's a geofencing error, set location error
+        if (errorData.error?.code === "LOCATION_OUT_OF_BOUNDS") {
+          setLocationError(errorMessage);
+          setLocation(null);
+        }
+        throw new Error(errorMessage);
       }
       return res.json();
     },
@@ -214,7 +220,13 @@ export function CreateIncidentModal({ isOpen, onClose }: CreateIncidentModalProp
     e.preventDefault();
 
     if (!location) {
-      setLocationError("Localização necessária");
+      setLocationError("Localização necessária para criar ocorrência");
+      return;
+    }
+
+    // Double-check geofencing before submission
+    if (!isWithinBeiraBounds(location.lat, location.lng)) {
+      setLocationError("Você está fora dos limites da cidade de Beira. Não é possível criar ocorrências fora da área da cidade.");
       return;
     }
 
