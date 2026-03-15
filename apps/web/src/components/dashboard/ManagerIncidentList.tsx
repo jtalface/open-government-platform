@@ -79,7 +79,13 @@ export function ManagerIncidentList() {
                 <p className="mb-3 line-clamp-2 text-gray-600">{incident.description}</p>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                  <span>📍 {incident.neighborhood?.name || t("common.unknown")}</span>
+                  <span>
+                    📍 {incident.neighborhood?.name || 
+                      (incident.lat && incident.lng 
+                        ? `${incident.lat.toFixed(2)}, ${incident.lng.toFixed(2)}`
+                        : t("common.unknown")
+                      )}
+                  </span>
                   <span>
                     🕐{" "}
                     {formatDistanceToNow(new Date(incident.createdAt), {

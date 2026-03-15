@@ -78,7 +78,11 @@ export function IncidentList() {
 
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span>
-                      📍 {incident.neighborhood?.name || t("incidents.locationUnidentified")}
+                      📍 {incident.neighborhood?.name || 
+                        (incident.lat && incident.lng 
+                          ? `${incident.lat.toFixed(2)}, ${incident.lng.toFixed(2)}`
+                          : t("incidents.locationUnidentified")
+                        )}
                     </span>
                     <span>
                       🕐{" "}

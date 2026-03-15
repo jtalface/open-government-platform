@@ -145,7 +145,13 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
           <h1 className="mb-4 text-3xl font-bold text-gray-900">{incident.title}</h1>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-            <span>📍 {incident.neighborhood?.name || t("incidents.locationUnidentified")}</span>
+            <span>
+              📍 {incident.neighborhood?.name || 
+                (incident.lat && incident.lng 
+                  ? `${incident.lat.toFixed(2)}, ${incident.lng.toFixed(2)}`
+                  : t("incidents.locationUnidentified")
+                )}
+            </span>
             <span>
               🕐{" "}
               {formatDistanceToNow(new Date(incident.createdAt), {
