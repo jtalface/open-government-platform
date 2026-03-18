@@ -24,12 +24,33 @@ export function ChangeStatusModal({ project, onClose, onSuccess }: ChangeStatusM
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newStatus, setNewStatus] = useState(project.status);
+  const [contractorName, setContractorName] = useState(project.assignedToName || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // If assigning and contractor not yet set, require it and update project first
+      if (newStatus === "ASSIGNED" && !project.assignedToName) {
+        if (!contractorName.trim()) {
+          setIsSubmitting(false);
+          alert(t("projects.contractor") + " " + t("common.isRequired") || "Contractor is required");
+          return;
+        }
+
+        const updateRes = await fetch(`/api/projects/${project.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignedToName: contractorName.trim() }),
+        });
+
+        if (!updateRes.ok) {
+          const error = await updateRes.json().catch(() => ({}));
+          throw new Error(error.message || t("projects.errorUpdating"));
+        }
+      }
+
       const res = await fetch(`/api/projects/${project.id}/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +107,15 @@ export function ChangeStatusModal({ project, onClose, onSuccess }: ChangeStatusM
 
         {newStatus === "ASSIGNED" && !project.assignedToName && (
           <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
-            ⚠️ {t("projects.contractor")} is required for ASSIGNED status
+            <label className="block text-xs font-medium text-yellow-900 mb-1">
+              {t("projects.contractor")}
+            </label>
+            <input
+              type="text"
+              value={contractorName}
+              onChange={(e) => setContractorName(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-yellow-300 px-3 py-2 text-gray-900"
+            />
           </div>
         )}
 
@@ -94,7 +123,15 @@ export function ChangeStatusModal({ project, onClose, onSuccess }: ChangeStatusM
           <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
             {t("common.cancel")}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={
+              isSubmitting ||
+              (newStatus === "ASSIGNED" &&
+                !project.assignedToName &&
+                !contractorName.trim())
+            }
+          >
             {isSubmitting ? t("common.loading") : t("common.save")}
           </Button>
         </div>

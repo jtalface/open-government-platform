@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { LoadingSpinner, Button } from "@ogp/ui";
 import { ProjectCard } from "./ProjectCard";
 import { CreateStandaloneProjectModal } from "./CreateStandaloneProjectModal";
+import { ProjectsCategoryFilter } from "./ProjectsCategoryFilter";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 interface Project {
@@ -32,15 +33,16 @@ export function ProjectsList() {
   const { t } = useTranslation();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<TabType>("ongoing");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const isAdmin = session?.user?.role === "ADMIN";
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["projects", activeTab],
+    queryKey: ["projects", activeTab, selectedCategoryId],
     queryFn: async () => {
       const params = new URLSearchParams();
-      
+
       if (activeTab === "completed") {
         params.append("status", "COMPLETED");
         params.append("archived", "false");
@@ -49,6 +51,10 @@ export function ProjectsList() {
       } else {
         // Ongoing: not completed and not archived
         params.append("archived", "false");
+      }
+
+      if (selectedCategoryId) {
+        params.append("categoryId", selectedCategoryId);
       }
 
       const res = await fetch(`/api/projects?${params.toString()}`);
@@ -85,31 +91,39 @@ export function ProjectsList() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Create Button */}
-      <div className="flex items-center justify-between">
-        <div className="border-b border-gray-200 flex-1">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
-                  activeTab === tab.key
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+      {/* Header with Filters and Create Button */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="border-b border-gray-200 flex-1">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
+                    activeTab === tab.key
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {isAdmin && (
+            <Button onClick={() => setIsCreateModalOpen(true)} className="ml-6">
+{t("projects.createProject")}
+            </Button>
+          )}
         </div>
 
-        {isAdmin && (
-          <Button onClick={() => setIsCreateModalOpen(true)} className="ml-6">
-            ➕ {t("projects.createProject")}
-          </Button>
-        )}
+        {/* Vereação Filter */}
+        <ProjectsCategoryFilter
+          selectedCategoryId={selectedCategoryId}
+          onChangeCategory={setSelectedCategoryId}
+        />
       </div>
 
       {/* Projects Grid */}

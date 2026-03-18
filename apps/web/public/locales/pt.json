@@ -137,7 +137,10 @@
     "comments": "Comentários",
     "addCommentPlaceholder": "Adicione um comentário...",
     "postComment": "Publicar Comentário",
-    "noComments": "Ainda não há comentários. Seja o primeiro a comentar!"
+    "noComments": "Ainda não há comentários. Seja o primeiro a comentar!",
+    "notifyCategory": "Notificar vereação",
+    "categoryNotified": "Vereação notificada com sucesso",
+    "errorNotifyingCategory": "Erro ao notificar vereação"
   },
   "tickets": {
     "title": "Senhas",

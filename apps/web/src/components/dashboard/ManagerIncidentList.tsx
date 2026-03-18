@@ -39,6 +39,27 @@ export function ManagerIncidentList() {
     },
   });
 
+  const notifyCategoryMutation = useMutation({
+    mutationFn: async (incidentId: string) => {
+      const res = await fetch(`/api/incidents/${incidentId}/notify-category`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error?.message || "Failed to notify category");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["manager-incidents"] });
+      alert(t("incidents.categoryNotified"));
+    },
+    onError: (error: Error) => {
+      alert(error.message || t("incidents.errorNotifyingCategory"));
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="py-12">
@@ -120,6 +141,17 @@ export function ManagerIncidentList() {
                   <option value="RESOLVED">{t("incidents.status_resolved")}</option>
                   <option value="CLOSED">{t("incidents.status_closed")}</option>
                 </select>
+
+                {/* Notify Category Button - Disabled when status is OPEN */}
+                <button
+                  onClick={() => notifyCategoryMutation.mutate(incident.id)}
+                  disabled={incident.status === "OPEN" || notifyCategoryMutation.isPending}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {notifyCategoryMutation.isPending
+                    ? t("common.loading")
+                    : t("incidents.notifyCategory")}
+                </button>
 
                 {/* Create Ticket Button */}
                 {!incident.ticketId && (

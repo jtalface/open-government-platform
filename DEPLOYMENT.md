@@ -317,9 +317,18 @@ AWS_SECRET_ACCESS_KEY="your-secret-key"
 S3_BUCKET_NAME="ogp-uploads-your-region"
 S3_UPLOAD_PREFIX="incidents"
 
+# AWS SES (for email notifications)
+SES_FROM_EMAIL="noreply@yourdomain.com"
+
+# Twilio (for WhatsApp notifications)
+TWILIO_ACCOUNT_SID="your-twilio-account-sid"
+TWILIO_AUTH_TOKEN="your-twilio-auth-token"
+TWILIO_WHATSAPP_FROM="whatsapp:+14155238886"
+
 # Application
 NODE_ENV="production"
 PORT=4000
+NEXT_PUBLIC_APP_URL="https://yourdomain.com"
 ```
 
 **Generate NEXTAUTH_SECRET**:

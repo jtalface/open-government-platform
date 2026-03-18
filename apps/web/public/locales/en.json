@@ -137,7 +137,10 @@
     "comments": "Comments",
     "addCommentPlaceholder": "Add a comment...",
     "postComment": "Post Comment",
-    "noComments": "No comments yet. Be the first to comment!"
+    "noComments": "No comments yet. Be the first to comment!",
+    "notifyCategory": "Notify Category",
+    "categoryNotified": "Category notified successfully",
+    "errorNotifyingCategory": "Error notifying category"
   },
   "tickets": {
     "title": "Tickets",
