@@ -46,3 +46,9 @@ Thumbs.db
 
 # User uploads (should not be in version control)
 apps/web/public/uploads/
+
+# Terraform local/state artifacts
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/tfplan

@@ -223,6 +223,10 @@ API routes and UI components (`apps/web/src/app`)
 
 ## Deployment
 
+For AWS infrastructure deployment with Terraform, see:
+
+- **[infra/README.md](./infra/README.md)** - Step-by-step production deployment guide
+
 ### Environment Variables
 
 Required:
