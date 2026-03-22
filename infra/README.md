@@ -44,6 +44,29 @@ aws ssm put-parameter --name '/ogp/prod/mapbox/token' --type 'String' --value 'R
 
 Note: Twilio values can be placeholders for initial deploy, but replace with real credentials before enabling notifications.
 
+### Canonical URL (production)
+
+Use **one** primary site URL everywhere (NextAuth, cookies, OAuth redirects, emails). For **beiraewawa.com** the canonical host is:
+
+**`https://www.beiraewawa.com`**
+
+After you point DNS / CloudFront at this host, set SSM to that exact value (no trailing slash unless your team standardizes otherwise):
+
+```bash
+aws ssm put-parameter --name '/ogp/prod/nextauth/url' --type 'String' --value 'https://www.beiraewawa.com' --overwrite --region af-south-1
+aws ssm put-parameter --name '/ogp/prod/app/public_url' --type 'String' --value 'https://www.beiraewawa.com' --overwrite --region af-south-1
+```
+
+Optional: align the SES sender with the same domain (if you use SES):
+
+```bash
+aws ssm put-parameter --name '/ogp/prod/ses/from_email' --type 'String' --value 'noreply@beiraewawa.com' --overwrite --region af-south-1
+```
+
+In your OAuth provider (e.g. Google), add redirect URIs for this host, e.g. `https://www.beiraewawa.com/api/auth/callback/google` (adjust path if your app differs).
+
+Then run **`./deploy.sh`** from your machine (repo root). It refreshes `NEXTAUTH_URL` / `NEXT_PUBLIC_APP_URL` from SSM into `.env.production` on each instance before `pnpm build`, so the new canonical URL is baked into the Next.js build.
+
 ## 3) Terraform Init / Validate / Plan / Apply
 
 From project root:

@@ -32,6 +32,7 @@ COMMAND_ID=$(aws ssm send-command \
     \"git fetch --all\",
     \"git checkout ${BRANCH}\",
     \"git reset --hard origin/${BRANCH}\",
+    \"bash scripts/apply-ssm-env-to-web.sh\",
     \"pnpm install --frozen-lockfile=false\",
     \"pnpm --filter @ogp/web build\",
     \"cd /opt/ogp/app/apps/web\",
