@@ -81,6 +81,7 @@ enum AuditAction {
   POLL_CLOSED
   POLL_ARCHIVED
   POLL_VOTED
+  INCIDENT_CATEGORY_NOTIFIED
 }
 
 enum PostVisibility {

@@ -141,13 +141,17 @@ export async function sendEmailNotification(
   incidentUrl: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    // Check if AWS SES is configured
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      console.warn("AWS SES credentials not configured. Skipping email notification.");
-      return { success: false, error: "AWS SES not configured" };
-    }
+    const fromEmail =
+      process.env.SES_FROM_EMAIL ||
+      process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
+      "noreply@beira.gov.mz";
 
-    const fromEmail = process.env.SES_FROM_EMAIL || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "noreply@beira.gov.mz";
+    // Prefer SES_FROM_EMAIL in env; otherwise SES still works on EC2 via instance role
+    // (do not require static AWS_ACCESS_KEY_ID — default provider chain handles IAM role).
+    if (!process.env.SES_FROM_EMAIL && !process.env.NEXT_PUBLIC_SUPPORT_EMAIL) {
+      console.warn("SES_FROM_EMAIL not set. Skipping email notification.");
+      return { success: false, error: "AWS SES not configured (missing SES_FROM_EMAIL)" };
+    }
     
     const { subject, htmlBody, textBody } = getEmailTemplate(
       incidentTitle,
