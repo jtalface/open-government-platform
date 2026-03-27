@@ -1,4 +1,4 @@
-# OGP AWS Production Deployment Guide
+                                                                                                    # OGP AWS Production Deployment Guide
 
 This guide explains how to deploy the Open Government Platform to AWS using the Terraform configuration in this `infra` folder.
 
@@ -66,6 +66,22 @@ aws ssm put-parameter --name '/ogp/prod/ses/from_email' --type 'String' --value 
 In your OAuth provider (e.g. Google), add redirect URIs for this host, e.g. `https://www.beiraewawa.com/api/auth/callback/google` (adjust path if your app differs).
 
 Then run **`./deploy.sh`** from your machine (repo root). It refreshes `NEXTAUTH_URL` / `NEXT_PUBLIC_APP_URL` from SSM into `.env.production` on each instance before `pnpm build`, so the new canonical URL is baked into the Next.js build.
+
+### CloudFront custom domains (do not skip)
+
+The Terraform `aws_cloudfront_distribution` **must** include your **alternate domain names** and **ACM certificate (us-east-1)**. If you apply with only the default CloudFront certificate, Terraform **removes** `www` / apex hostnames from the distribution and browsers show **403** from CloudFront for `https://www…`.
+
+1. Set in `terraform.tfvars`:
+   - **`cloudfront_aliases`** — e.g. `www.beiraewawa.com`, `beiraewawa.com`, and `.org` equivalents.
+   - **`cloudfront_acm_certificate_arn`** — ARN of the cert in **`us-east-1`** (same cert you use for HTTPS on those names).
+
+2. Look up the ARN:
+
+```bash
+aws acm list-certificates --region us-east-1 --query "CertificateSummaryList[].[DomainName,CertificateArn]" --output table
+```
+
+3. **Immediate recovery** if aliases were already removed: AWS Console → **CloudFront** → distribution → **Edit** → restore **alternate domain names** + **Custom SSL certificate** (ACM in **N. Virginia**), save, wait until **Deployed**. Then fix Terraform as above so the next `apply` does not strip them again.
 
 ## 3) Terraform Init / Validate / Plan / Apply
 

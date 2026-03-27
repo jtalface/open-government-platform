@@ -34,3 +34,16 @@ variable "db_username" {
 variable "db_password_ssm_param" {
   type = string
 } # SSM param path
+
+# CloudFront custom domains (ACM must be in us-east-1 — CloudFront requirement)
+variable "cloudfront_aliases" {
+  type        = list(string)
+  default     = []
+  description = "Alternate domain names (CNAMEs) for the app distribution, e.g. www.example.com. Leave empty to use *.cloudfront.net only."
+}
+
+variable "cloudfront_acm_certificate_arn" {
+  type        = string
+  default     = ""
+  description = "ACM certificate ARN in us-east-1 covering all cloudfront_aliases. Required if cloudfront_aliases is non-empty."
+}

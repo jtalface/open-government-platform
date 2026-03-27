@@ -1,5 +1,7 @@
 locals {
   name = var.project_name
+  # Custom TLS + hostnames for CloudFront (ACM must be in us-east-1).
+  cloudfront_custom_domain = length(var.cloudfront_aliases) > 0
 }
 
 data "aws_availability_zones" "available" {
@@ -286,6 +288,7 @@ resource "aws_cloudfront_distribution" "app" {
   enabled             = true
   comment             = "${local.name} distribution"
   default_root_object = ""
+  aliases             = var.cloudfront_aliases
 
   origin {
     domain_name = aws_lb.app.dns_name
@@ -321,7 +324,17 @@ resource "aws_cloudfront_distribution" "app" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    cloudfront_default_certificate = !local.cloudfront_custom_domain
+    acm_certificate_arn            = local.cloudfront_custom_domain ? var.cloudfront_acm_certificate_arn : null
+    ssl_support_method             = local.cloudfront_custom_domain ? "sni-only" : null
+    minimum_protocol_version       = local.cloudfront_custom_domain ? "TLSv1.2_2021" : null
+  }
+
+  lifecycle {
+    precondition {
+      condition     = !local.cloudfront_custom_domain || var.cloudfront_acm_certificate_arn != ""
+      error_message = "Set cloudfront_acm_certificate_arn (ACM in us-east-1) when cloudfront_aliases is non-empty, or Terraform apply will drop custom domains again."
+    }
   }
 }
 
