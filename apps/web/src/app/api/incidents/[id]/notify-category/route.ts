@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth-options";
 import { handleApiError } from "@/lib/api/error-handler";
-import { prisma, AuditAction } from "@ogp/database";
+import { prisma } from "@ogp/database";
+import type { AuditAction } from "@prisma/client";
 import { notifyContact, normalizePhoneNumber } from "@/lib/services/notification-service";
 import { ContactInfo } from "@ogp/types";
 
@@ -105,7 +106,8 @@ export async function POST(
         actorUserId: session.user.id,
         entityType: "IncidentEvent",
         entityId: incident.id,
-        action: AuditAction.INCIDENT_CATEGORY_NOTIFIED,
+        // Use string + cast so runtime works even if Prisma Client wasn’t regenerated on the server.
+        action: "INCIDENT_CATEGORY_NOTIFIED" as AuditAction,
         metadata: {
           incidentTitle: incident.title,
           categoryId: incident.categoryId,

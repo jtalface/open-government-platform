@@ -168,6 +168,24 @@ resource "aws_iam_role_policy_attachment" "cw" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
+# SES: send from verified identities (used by notify-category email)
+resource "aws_iam_role_policy" "ec2_ses_send" {
+  name = "${local.name}-ec2-ses-send"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${local.name}-instance-profile"
   role = aws_iam_role.ec2_role.name

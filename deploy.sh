@@ -34,6 +34,7 @@ COMMAND_ID=$(aws ssm send-command \
     \"git reset --hard origin/${BRANCH}\",
     \"bash scripts/apply-ssm-env-to-web.sh\",
     \"pnpm install --frozen-lockfile=false\",
+    \"pnpm db:generate\",
     \"pnpm --filter @ogp/web build\",
     \"cd /opt/ogp/app/apps/web\",
     \"pm2 restart ogp-web --update-env || pm2 start pnpm --name ogp-web -- start\",
