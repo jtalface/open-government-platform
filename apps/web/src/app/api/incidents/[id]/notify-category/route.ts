@@ -76,8 +76,8 @@ export async function POST(
 
     if (responsavel && (responsavel.email || responsavel.phone)) {
       // Normalize phone number for WhatsApp if provided
-      const normalizedPhone = responsavel.phone 
-        ? normalizePhoneNumber(responsavel.phone, "258") // Mozambique country code
+      const normalizedPhone = responsavel.phone
+        ? normalizePhoneNumber(responsavel.phone)
         : undefined;
       
       const contactToNotify: ContactInfo = {

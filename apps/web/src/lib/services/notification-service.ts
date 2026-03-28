@@ -218,7 +218,7 @@ export async function sendWhatsAppNotification(
     }
 
     const fromNumber = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886"; // Twilio sandbox number
-    const toNumber = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+    const toNumber = toWhatsAppAddress(to);
     
     const message = getWhatsAppMessage(
       incidentTitle,
@@ -294,24 +294,22 @@ export async function notifyContact(
 }
 
 /**
- * Normalize phone number for WhatsApp (E.164 digits only, no + in return value).
- * If the user already included a leading "+", we trust full international format (sandbox / any country).
- * Otherwise we apply defaultCountryCode (Mozambique 258) for local-style numbers.
+ * Strip formatting only; do not add a country code. Store full international numbers in admin
+ * (e.g. +14155551234 or +25884xxxxxxx) — digits after stripping must be valid E.164 without the leading +.
  */
-export function normalizePhoneNumber(phone: string, defaultCountryCode: string = "258"): string {
-  const trimmed = phone.trim();
-  if (trimmed.startsWith("+")) {
-    return trimmed.replace(/\D/g, "");
+export function normalizePhoneNumber(phone: string): string {
+  return phone.trim().replace(/\D/g, "");
+}
+
+/** Twilio WhatsApp "To" must look like whatsapp:+E164 */
+function toWhatsAppAddress(to: string): string {
+  const t = to.trim();
+  if (t.toLowerCase().startsWith("whatsapp:")) {
+    return t;
   }
-
-  let cleaned = phone.replace(/\D/g, "");
-
-  if (!cleaned.startsWith(defaultCountryCode)) {
-    if (cleaned.startsWith("0")) {
-      cleaned = cleaned.substring(1);
-    }
-    cleaned = defaultCountryCode + cleaned;
+  const digits = t.replace(/\D/g, "");
+  if (!digits) {
+    return t;
   }
-
-  return cleaned;
+  return `whatsapp:+${digits}`;
 }
