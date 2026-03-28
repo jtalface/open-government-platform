@@ -35,7 +35,7 @@ aws ssm put-parameter --name '/ogp/prod/nextauth/secret' --type 'SecureString' -
 aws ssm put-parameter --name '/ogp/prod/nextauth/url' --type 'String' --value 'https://yourdomain.com' --overwrite --region af-south-1
 aws ssm put-parameter --name '/ogp/prod/app/public_url' --type 'String' --value 'https://yourdomain.com' --overwrite --region af-south-1
 aws ssm put-parameter --name '/ogp/prod/s3/bucket_name' --type 'String' --value 'REPLACE_BUCKET_NAME' --overwrite --region af-south-1
-aws ssm put-parameter --name '/ogp/prod/ses/from_email' --type 'String' --value 'noreply@yourdomain.com' --overwrite --region af-south-1
+aws ssm put-parameter --name '/ogp/prod/ses/from_email' --type 'String' --value 'noreply@beiraewawa.com' --overwrite --region af-south-1
 aws ssm put-parameter --name '/ogp/prod/twilio/account_sid' --type 'String' --value 'AC00000000000000000000000000000000' --overwrite --region af-south-1
 aws ssm put-parameter --name '/ogp/prod/twilio/auth_token' --type 'SecureString' --value 'dummy-token-not-real' --overwrite --region af-south-1
 aws ssm put-parameter --name '/ogp/prod/twilio/whatsapp_from' --type 'String' --value 'whatsapp:+14155238886' --overwrite --region af-south-1
@@ -57,11 +57,24 @@ aws ssm put-parameter --name '/ogp/prod/nextauth/url' --type 'String' --value 'h
 aws ssm put-parameter --name '/ogp/prod/app/public_url' --type 'String' --value 'https://www.beiraewawa.com' --overwrite --region af-south-1
 ```
 
-Optional: align the SES sender with the same domain (if you use SES):
+### Email notifications (SES)
+
+Notify-category email uses **Amazon SES in the same region as `AWS_REGION`** on the EC2 instances (typically **`af-south-1`**). The EC2 role must allow `ses:SendEmail` (included in this repo’s Terraform).
+
+1. **AWS Console** → **SES** → region **`af-south-1`** → **Verified identities**  
+   - Add and verify a **domain** (e.g. `beiraewawa.com`) *or* a single **email** you send from (e.g. `noreply@beiraewawa.com`).  
+   - **From** address in SSM must match that identity exactly.
+
+2. **Sandbox vs production**  
+   - In **sandbox**, SES only sends **to** verified addresses too — verify each category **responsável** email you test with, **or** request **production access** for `af-south-1` to send to any recipient.
+
+3. **SSM** (then **`./deploy.sh`** so `.env.production` picks it up):
 
 ```bash
 aws ssm put-parameter --name '/ogp/prod/ses/from_email' --type 'String' --value 'noreply@beiraewawa.com' --overwrite --region af-south-1
 ```
+
+Use a **verified** sender; avoid placeholders like `yourdomain.com`. Optional: set **`SES_REGION=af-south-1`** in `.env.production` if you ever need SES in a different region than `AWS_REGION`.
 
 In your OAuth provider (e.g. Google), add redirect URIs for this host, e.g. `https://www.beiraewawa.com/api/auth/callback/google` (adjust path if your app differs).
 

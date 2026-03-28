@@ -7,9 +7,12 @@ import { ContactInfo } from "@ogp/types";
  * Uses AWS SES for emails and Twilio for WhatsApp
  */
 
-// Initialize AWS SES client
+// SES is regional — must match where identities are verified (e.g. af-south-1 for this deployment).
+const sesRegion =
+  process.env.SES_REGION || process.env.AWS_REGION || "us-east-1";
+
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION || "us-east-1",
+  region: sesRegion,
   credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
     ? {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -141,18 +144,19 @@ export async function sendEmailNotification(
   incidentUrl: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
+    // Do not invent a From address — it must be a verified SES identity in `sesRegion`.
     const fromEmail =
-      process.env.SES_FROM_EMAIL ||
-      process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
-      "noreply@beira.gov.mz";
+      process.env.SES_FROM_EMAIL || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "";
 
-    // Prefer SES_FROM_EMAIL in env; otherwise SES still works on EC2 via instance role
-    // (do not require static AWS_ACCESS_KEY_ID — default provider chain handles IAM role).
-    if (!process.env.SES_FROM_EMAIL && !process.env.NEXT_PUBLIC_SUPPORT_EMAIL) {
-      console.warn("SES_FROM_EMAIL not set. Skipping email notification.");
-      return { success: false, error: "AWS SES not configured (missing SES_FROM_EMAIL)" };
+    if (!fromEmail) {
+      console.warn("SES_FROM_EMAIL (or NEXT_PUBLIC_SUPPORT_EMAIL) not set. Skipping email.");
+      return {
+        success: false,
+        error:
+          "AWS SES not configured: set SSM /ogp/prod/ses/from_email to a verified sender, then deploy.",
+      };
     }
-    
+
     const { subject, htmlBody, textBody } = getEmailTemplate(
       incidentTitle,
       incidentDescription,
