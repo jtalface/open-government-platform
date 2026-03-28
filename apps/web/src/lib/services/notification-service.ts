@@ -294,20 +294,24 @@ export async function notifyContact(
 }
 
 /**
- * Normalize phone number for WhatsApp (remove spaces, add country code if needed)
+ * Normalize phone number for WhatsApp (E.164 digits only, no + in return value).
+ * If the user already included a leading "+", we trust full international format (sandbox / any country).
+ * Otherwise we apply defaultCountryCode (Mozambique 258) for local-style numbers.
  */
 export function normalizePhoneNumber(phone: string, defaultCountryCode: string = "258"): string {
-  // Remove all non-digit characters
+  const trimmed = phone.trim();
+  if (trimmed.startsWith("+")) {
+    return trimmed.replace(/\D/g, "");
+  }
+
   let cleaned = phone.replace(/\D/g, "");
-  
-  // If it doesn't start with country code, add it
+
   if (!cleaned.startsWith(defaultCountryCode)) {
-    // Remove leading 0 if present (common in Mozambique)
     if (cleaned.startsWith("0")) {
       cleaned = cleaned.substring(1);
     }
     cleaned = defaultCountryCode + cleaned;
   }
-  
+
   return cleaned;
 }
