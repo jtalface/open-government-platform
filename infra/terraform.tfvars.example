@@ -1,0 +1,24 @@
+# Copy to terraform.tfvars and fill cloudfront_acm_certificate_arn before `terraform apply`.
+# See README "Production guardrails".
+
+aws_region            = "af-south-1"
+project_name          = "ogp"
+domain_name           = "beiraewawa.com"
+
+vpc_cidr              = "10.0.0.0/16"
+public_subnets        = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnets       = ["10.0.11.0/24", "10.0.12.0/24"]
+db_subnets            = ["10.0.21.0/24", "10.0.22.0/24"]
+
+db_username           = "ogp_admin"
+db_password_ssm_param = "/ogp/prod/db/password"
+
+cloudfront_aliases = [
+  "www.beiraewawa.com",
+  "beiraewawa.com",
+  "www.beiraewawa.org",
+  "beiraewawa.org",
+]
+
+# Required when cloudfront_aliases is non-empty (ACM in us-east-1 only).
+cloudfront_acm_certificate_arn = "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"

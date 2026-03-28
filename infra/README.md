@@ -177,6 +177,33 @@ aws autoscaling describe-instance-refreshes --region af-south-1 --auto-scaling-g
 - Target group shows healthy targets
 - RDS is available
 - ALB and CloudFront URLs respond
-- Core app flows work (auth, incidents, project pages)
+- **CloudFront:** alternate domain names + custom ACM still present (or match `terraform.tfvars`)
+- **SSM:** `/ogp/prod/ses/from_email` verified in SES (`af-south-1`); Twilio params set for WhatsApp
+- App deploy from repo root: **`./deploy.sh`** (refreshes SSM → `.env`, runs `pnpm db:generate` before web build)
+- Core app flows work (auth, incidents, notify vereação: email + WhatsApp as configured)
 - CloudWatch alarms/metrics are normal
+
+## 8) Production guardrails (keep the working setup)
+
+These are the issues that broke production before; do not regress without reading this.
+
+1. **Terraform + CloudFront**  
+   - `aws_cloudfront_distribution` in `main.tf` includes **`aliases`** and **`viewer_certificate`** from variables.  
+   - **`infra/terraform.tfvars`** must set **`cloudfront_acm_certificate_arn`** to your **us-east-1** ACM ARN whenever **`cloudfront_aliases`** is non-empty. An empty ARN will fail the **precondition** instead of silently removing custom domains again.  
+   - Copy from **`terraform.tfvars.example`** if you need a template.  
+   - **Never** revert `main.tf` CloudFront to “default certificate only” without understanding you will drop `www` / apex HTTPS.
+
+2. **SES email**  
+   - **`/ogp/prod/ses/from_email`** must match a **verified** identity in SES **`af-south-1`**.  
+   - Domain DKIM (GoDaddy CNAMEs) must stay correct. Sandbox: verify recipient addresses or use production access.
+
+3. **WhatsApp**  
+   - **`/ogp/prod/twilio/*`** in SSM; **`./deploy.sh`** runs **`scripts/apply-ssm-env-to-web.sh`** (Python-safe quoting for secrets).  
+   - Category **telefone** = full **E.164** digits (no automatic `258` prefix).
+
+4. **App releases**  
+   - Run **`./deploy.sh`** from your **laptop** (AWS CLI + SSM), not only on EC2, so both instances get the same git revision and env.
+
+5. **Database migrations**  
+   - After pulling migrations, run **`prisma migrate deploy`** once against RDS (SSM one-liner in conversation history / use `pnpm exec prisma migrate deploy` on an instance with `DATABASE_URL` loaded).
 
