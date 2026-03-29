@@ -66,7 +66,7 @@ export async function POST(
 
     // Build incident URL
     const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4000";
-    const incidentUrl = `${baseUrl}/dashboard/incidents/${incident.id}`;
+    const incidentUrl = `${baseUrl}/incidents/${incident.id}`;
 
     // Send notifications to responsavel if available
     const notificationResults: {
