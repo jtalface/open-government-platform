@@ -22,4 +22,4 @@ cloudfront_aliases = [
   "beiraewawa.org",
 ]
 # Paste your production cert ARN (us-east-1). Do not leave empty while aliases are set, or plan will fail the precondition.
-cloudfront_acm_certificate_arn = ""
+cloudfront_acm_certificate_arn = "arn:aws:acm:us-east-1:378788317743:certificate/ad979be9-aea0-44aa-b198-14b28f89e366"
