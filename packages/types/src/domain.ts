@@ -152,6 +152,7 @@ export interface IncidentEvent extends BaseEntity {
   voteStats: VoteStats;
   importanceScore: number; // Calculated score for sorting
   ticketId?: string; // Linked ticket if created
+  deletedAt?: string | null; // Soft-delete timestamp when set
   // Relations (populated separately)
   category?: Category;
   createdBy?: User;

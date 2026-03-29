@@ -27,10 +27,11 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const incident = await prisma.incidentEvent.findUnique({
+    const incident = await prisma.incidentEvent.findFirst({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
+        deletedAt: null,
       },
       include: {
         category: true,

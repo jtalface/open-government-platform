@@ -15,6 +15,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "db:generate": "pnpm --filter @ogp/database generate",
     "db:migrate": "pnpm --filter @ogp/database migrate",
+    "db:migrate:deploy": "pnpm --filter @ogp/database migrate:deploy",
     "db:push": "pnpm --filter @ogp/database push",
     "db:studio": "pnpm --filter @ogp/database studio",
     "db:seed": "pnpm --filter @ogp/database seed",

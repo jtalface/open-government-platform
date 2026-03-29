@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { requireAuth } from "@/lib/auth/rbac";
-import { successResponse, handleApiError } from "@/lib/api/error-handler";
+import { successResponse, handleApiError, errorResponse } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
+import { UserRole } from "@ogp/types";
 import { z } from "zod";
 
 const CreateCommentSchema = z.object({
@@ -22,15 +23,18 @@ export async function GET(
     const session = await getServerSession(authOptions);
     requireAuth(session);
 
-    const incident = await prisma.incidentEvent.findUnique({
+    const allowDeleted = session!.user.role === UserRole.ADMIN;
+
+    const incident = await prisma.incidentEvent.findFirst({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
+        ...(!allowDeleted ? { deletedAt: null } : {}),
       },
     });
 
     if (!incident) {
-      return handleApiError(new Error("Incident not found"), 404);
+      return errorResponse("NOT_FOUND", "Incident not found", 404);
     }
 
     const comments = await prisma.incidentComment.findMany({
@@ -70,15 +74,16 @@ export async function POST(
     const session = await getServerSession(authOptions);
     requireAuth(session);
 
-    const incident = await prisma.incidentEvent.findUnique({
+    const incident = await prisma.incidentEvent.findFirst({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
+        deletedAt: null,
       },
     });
 
     if (!incident) {
-      return handleApiError(new Error("Incident not found"), 404);
+      return errorResponse("NOT_FOUND", "Incident not found", 404);
     }
 
     const body = await request.json();

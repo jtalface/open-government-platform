@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { requireManager } from "@/lib/auth/rbac";
-import { successResponse, handleApiError } from "@/lib/api/error-handler";
+import { successResponse, handleApiError, errorResponse } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 import { z } from "zod";
 
@@ -25,11 +25,21 @@ export async function PATCH(
     const body = await request.json();
     const { status } = UpdateStatusSchema.parse(body);
 
-    // Update incident status
-    const incident = await prisma.incidentEvent.update({
+    const existing = await prisma.incidentEvent.findFirst({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
+        deletedAt: null,
+      },
+    });
+
+    if (!existing) {
+      return errorResponse("NOT_FOUND", "Incident not found", 404);
+    }
+
+    const incident = await prisma.incidentEvent.update({
+      where: {
+        id: params.id,
       },
       data: {
         status,

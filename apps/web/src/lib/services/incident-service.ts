@@ -25,7 +25,7 @@ export async function createIncident(
       id, "municipalityId", "categoryId", title, description,
       location, lat, lng, geohash, "neighborhoodId",
       status, "createdByUserId", media, "voteStats", "importanceScore",
-      "createdAt", "updatedAt"
+      "createdAt", "updatedAt", "deletedAt"
     )
     VALUES (
       gen_random_uuid(),
@@ -44,7 +44,8 @@ export async function createIncident(
       '{"total": 0, "upvotes": 0, "downvotes": 0, "byNeighborhood": {}}'::json,
       0.0,
       NOW(),
-      NOW()
+      NOW(),
+      NULL
     )
     RETURNING id
   `;
@@ -102,6 +103,10 @@ export async function voteOnIncident(
     throw new Error("Incident not found");
   }
 
+  if (incident.deletedAt) {
+    throw new Error("Incident not found");
+  }
+
   // Update or create vote
   if (existingVote) {
     await prisma.vote.update({
@@ -128,6 +133,14 @@ export async function voteOnIncident(
  * Remove vote from incident
  */
 export async function removeVote(userId: string, incidentId: string): Promise<void> {
+  const incident = await prisma.incidentEvent.findUnique({
+    where: { id: incidentId },
+    select: { deletedAt: true },
+  });
+  if (!incident || incident.deletedAt) {
+    throw new Error("Incident not found");
+  }
+
   await prisma.vote.delete({
     where: {
       incidentId_userId: {
@@ -204,6 +217,7 @@ export async function getIncidentsNearby(
       ) as distance
     FROM incident_events ie
     WHERE ie."municipalityId" = ${municipalityId}::uuid
+      AND ie."deletedAt" IS NULL
       AND ST_DWithin(
         ie.location::geography,
         ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,

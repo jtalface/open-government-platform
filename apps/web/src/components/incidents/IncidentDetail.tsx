@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
@@ -68,8 +69,10 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
     }
   }
 
-  // Check if current user is the creator
   const isCreator = session?.user?.id === incident.createdBy.id;
+  const isAdmin = session?.user?.role === "ADMIN";
+  const canEdit = isCreator || isAdmin;
+  const isSoftDeleted = Boolean(incident.deletedAt);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
@@ -119,7 +122,7 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
                 {getStatusLabel(incident.status, t)}
               </Badge>
             </div>
-            {isCreator && (
+            {canEdit && (
               <Button
                 variant="outline"
                 size="sm"
@@ -142,6 +145,17 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
               </Button>
             )}
           </div>
+
+          {isSoftDeleted && isAdmin && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Esta ocorrência foi removida da vista pública. Só administradores a vêem nas listagens
+              normais; pode editá-la ou consultar o histórico em{" "}
+              <Link href="/admin/incidents/deleted" className="font-medium underline">
+                Ocorrências removidas
+              </Link>
+              .
+            </div>
+          )}
 
           <h1 className="mb-4 text-3xl font-bold text-gray-900">{incident.title}</h1>
 
@@ -199,26 +213,28 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
           </div>
         </div>
 
-        {/* Voting */}
-        <div className="border-t bg-gray-50 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-700">
-                {t("incidents.isImportantToYou")}
-              </p>
-              <p className="text-xs text-gray-500">
-                {incident.voteStats.total || 0} {t("incidents.peopleVoted")}
-              </p>
-            </div>
+        {/* Voting (disabled for soft-deleted incidents) */}
+        {!isSoftDeleted && (
+          <div className="border-t bg-gray-50 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  {t("incidents.isImportantToYou")}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {incident.voteStats.total || 0} {t("incidents.peopleVoted")}
+                </p>
+              </div>
 
-            <VoteButtons
-              incidentId={incident.id}
-              initialVote={incident.userVote}
-              upvotes={incident.voteStats.upvotes || 0}
-              downvotes={incident.voteStats.downvotes || 0}
-            />
+              <VoteButtons
+                incidentId={incident.id}
+                initialVote={incident.userVote}
+                upvotes={incident.voteStats.upvotes || 0}
+                downvotes={incident.voteStats.downvotes || 0}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Ticket info if exists */}
         {incident.ticket && (
@@ -262,7 +278,10 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
 
         {/* Comments Section */}
         <div className="border-t bg-white p-6">
-          <IncidentComments incidentId={incidentId} />
+          <IncidentComments
+            incidentId={incidentId}
+            allowNewComments={!isSoftDeleted}
+          />
         </div>
       </Card>
 
@@ -272,6 +291,7 @@ export function IncidentDetail({ incidentId }: IncidentDetailProps) {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           incidentId={incidentId}
+          isAdmin={isAdmin}
           initialData={{
             title: incident.title,
             description: incident.description,

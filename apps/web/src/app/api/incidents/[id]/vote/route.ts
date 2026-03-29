@@ -21,8 +21,12 @@ export async function POST(
     requireAuth(session);
 
     // Get incident to check neighborhood
-    const incident = await prisma.incidentEvent.findUnique({
-      where: { id: params.id },
+    const incident = await prisma.incidentEvent.findFirst({
+      where: {
+        id: params.id,
+        municipalityId: session!.user.municipalityId,
+        deletedAt: null,
+      },
       select: { neighborhoodId: true, municipalityId: true },
     });
 

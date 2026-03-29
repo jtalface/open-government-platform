@@ -10,9 +10,14 @@ import { useTranslation } from "@/lib/i18n/TranslationContext";
 
 interface IncidentCommentsProps {
   incidentId: string;
+  /** When false, existing comments still load but the compose form is hidden (e.g. soft-deleted incident). */
+  allowNewComments?: boolean;
 }
 
-export function IncidentComments({ incidentId }: IncidentCommentsProps) {
+export function IncidentComments({
+  incidentId,
+  allowNewComments = true,
+}: IncidentCommentsProps) {
   const { t, locale } = useTranslation();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -70,7 +75,7 @@ export function IncidentComments({ incidentId }: IncidentCommentsProps) {
       </h2>
 
       {/* Comment Form */}
-      {session && (
+      {session && allowNewComments && (
         <form onSubmit={handleSubmit} className="space-y-3">
           <textarea
             value={commentText}

@@ -58,7 +58,7 @@ export function IncidentFilters() {
               : "bg-white text-gray-700 hover:bg-gray-100"
           }`}
         >
-          {t("common.all")}
+          {t("incidents.all")}
         </button>
         {categories?.map((category: any) => (
           <button

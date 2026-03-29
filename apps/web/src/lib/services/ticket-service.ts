@@ -40,6 +40,16 @@ export async function createTicket(
 
   // If ticket is linked to an incident, update incident status
   if (input.incidentId) {
+    const linked = await prisma.incidentEvent.findFirst({
+      where: {
+        id: input.incidentId,
+        municipalityId,
+        deletedAt: null,
+      },
+    });
+    if (!linked) {
+      throw new Error("Incident not found or was removed");
+    }
     await prisma.incidentEvent.update({
       where: { id: input.incidentId },
       data: {

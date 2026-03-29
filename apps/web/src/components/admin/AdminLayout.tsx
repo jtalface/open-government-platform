@@ -19,6 +19,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: t("nav.dashboard"), href: "/admin", icon: "📊" },
     { name: t("admin.users"), href: "/admin/users", icon: "👥" },
     { name: t("admin.categories"), href: "/admin/categories", icon: "📂" },
+    { name: "Ocorrências removidas", href: "/admin/incidents/deleted", icon: "🗂️" },
     { name: "Canais Oficiais", href: "/admin/channels", icon: "📢" },
   ];
 

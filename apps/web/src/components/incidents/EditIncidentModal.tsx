@@ -10,6 +10,8 @@ interface EditIncidentModalProps {
   isOpen: boolean;
   onClose: () => void;
   incidentId: string;
+  /** When true, show soft-delete control (admin only). */
+  isAdmin?: boolean;
   initialData: {
     title: string;
     description: string;
@@ -22,6 +24,7 @@ export function EditIncidentModal({
   isOpen,
   onClose,
   incidentId,
+  isAdmin = false,
   initialData,
 }: EditIncidentModalProps) {
   const router = useRouter();
@@ -36,6 +39,7 @@ export function EditIncidentModal({
   const [isUploading, setIsUploading] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Parse existing media
   useEffect(() => {
@@ -70,6 +74,7 @@ export function EditIncidentModal({
       setUploadedImageUrl(null);
       setIsUploading(false);
       setImageRemoved(false);
+      setShowDeleteConfirm(false);
     }
   }, [isOpen, initialData]);
 
@@ -189,7 +194,28 @@ export function EditIncidentModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["incident", incidentId] });
       queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "incidents", "deleted"] });
       onClose();
+      router.refresh();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/incidents/${incidentId}`, { method: "DELETE" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json.error?.message || "Falha ao remover ocorrência");
+      }
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["incident", incidentId] });
+      queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      queryClient.invalidateQueries({ queryKey: ["incident-comments", incidentId] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "incidents", "deleted"] });
+      onClose();
+      router.push("/incidents");
       router.refresh();
     },
   });
@@ -351,6 +377,58 @@ export function EditIncidentModal({
           {updateMutation.isError && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
               {updateMutation.error?.message || "Erro ao atualizar ocorrência. Tente novamente."}
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="rounded-lg border border-red-200 bg-red-50/80 p-4">
+              <p className="text-sm font-medium text-red-900">Zona de perigo</p>
+              <p className="mt-1 text-xs text-red-800/90">
+                Remove a ocorrência das listagens e mapas públicos. Os dados mantêm-se na base de dados; pode
+                rever em Admin → Ocorrências removidas.
+              </p>
+              {!showDeleteConfirm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 w-full border-red-300 text-red-700 hover:bg-red-100"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Remover ocorrência…
+                </Button>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-red-900">
+                    Tem a certeza? A ocorrência deixa de aparecer em listas e mapas para todos, exceto
+                    administradores na página de Ocorrências removidas.
+                  </p>
+                  {deleteMutation.isError && (
+                    <p className="text-sm text-red-700">
+                      {(deleteMutation.error as Error)?.message}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="button"
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      isLoading={deleteMutation.isPending}
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate()}
+                    >
+                      Confirmar remoção
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

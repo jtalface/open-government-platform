@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
       prisma.incidentEvent.count({
         where: {
           municipalityId,
+          deletedAt: null,
           status: { in: ["OPEN", "TRIAGED", "TICKETED"] },
         },
       }),

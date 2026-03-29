@@ -47,9 +47,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Standard query
+    // Standard query (never list soft-deleted)
     const where: any = {
       municipalityId,
+      deletedAt: null,
     };
 
     if (categoryId) where.categoryId = categoryId;

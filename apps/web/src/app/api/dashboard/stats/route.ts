@@ -22,9 +22,10 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const categoryId = searchParams.get("categoryId");
 
-    // Build base where clause
+    // Build base where clause (exclude soft-deleted incidents)
     const baseWhere: any = {
       municipalityId,
+      deletedAt: null,
     };
 
     // Add category filter if provided
@@ -61,11 +62,13 @@ export async function GET(request: NextRequest) {
               status: { in: ["NEW", "IN_PROGRESS"] },
               incident: {
                 categoryId,
+                deletedAt: null,
               },
             }
           : {
               municipalityId,
               status: { in: ["NEW", "IN_PROGRESS"] },
+              OR: [{ incidentId: null }, { incident: { deletedAt: null } }],
             },
       }),
       // Resolved incidents this week (RESOLVED or CLOSED in last 7 days)

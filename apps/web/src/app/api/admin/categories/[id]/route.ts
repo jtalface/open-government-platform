@@ -110,7 +110,7 @@ export async function DELETE(
 
     // Check if category is in use
     const incidentCount = await prisma.incidentEvent.count({
-      where: { categoryId: params.id },
+      where: { categoryId: params.id, deletedAt: null },
     });
 
     if (incidentCount > 0) {
