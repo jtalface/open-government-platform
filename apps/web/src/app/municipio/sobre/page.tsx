@@ -17,77 +17,92 @@ export default async function SobreMunicipioPage() {
       <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Sobre o Município</h1>
-        <p className="text-gray-600">
-          Informações sobre a Câmara Municipal da Beira
-        </p>
       </div>
 
       <Card className="p-8 space-y-6">
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Câmara Municipal da Beira</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Enquadramento Geográfico e Estratégico</h2>
           <p className="text-gray-700 leading-relaxed">
-            A Câmara Municipal da Beira é o órgão executivo do município de Beira, 
-            responsável pela gestão e administração dos serviços municipais, 
-            desenvolvimento urbano, e prestação de serviços públicos à população.
+            A cidade da Beira localiza-se na Baía de Sofala, na região centro da República de
+            Moçambique, ocupando uma área de 630 km².
+          </p>
+          <br />
+          <p className="text-gray-700 leading-relaxed">
+            Pela sua posição geoestratégica de reconhecida relevância, a Beira constitui-se como
+            um dos mais importantes pilares do Corredor da Beira, desempenhando um papel de
+            inegável destaque no contexto económico, logístico e portuário do País e da região
+            Austral de África. Mercê da existência do seu porto, a cidade afirma-se como uma
+            plataforma logística de referência, assegurando a ligação aos países do hinterland
+            regional, com particular destaque para o Zimbabwe, a Zâmbia e o Malawi.
+          </p>
+          <br />
+          <p className="text-gray-700 leading-relaxed">
+            Do ponto de vista físico e ambiental, a cidade encontra-se inserida num ecossistema
+            caracterizado por um complexo sistema de pântanos e estuários, cuja dinâmica resulta
+            da interacção entre o rio Púnguè e o Oceano Índico. Esta configuração natural confere
+            à Beira características singulares, influenciando, por um lado, a sua vocação económica
+            tradicional, alicerçada na pesca, na logística e nas actividades portuárias, e impondo,
+            por outro, desafios estruturais permanentes nos domínios da drenagem urbana, da
+            protecção costeira e da gestão sustentável do território.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Visão: “Beira a Renascer”</h2>
+          <p className="text-gray-700 leading-relaxed">
+            Ser uma cidade próspera, segura e saudável.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Missão</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Promover o desenvolvimento sustentável do município, garantindo a prestação 
-            de serviços públicos de qualidade, fomentando a participação cidadã e 
-            contribuindo para o bem-estar da população de Beira.
-          </p>
+          <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <li>Melhorar a qualidade de vida dos munícipes e reforçar a resiliência e a segurança
+            face às mudanças climáticas;</li>
+            <li>Promover um ambiente atractivo ao investimento e à geração de emprego;</li>
+            <li>Garantir serviços de planeamento urbano de qualidade.</li>
+          </ul>
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Visão</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Ser uma instituição municipal moderna, transparente e eficiente, 
-            reconhecida pela excelência na prestação de serviços e pelo 
-            compromisso com o desenvolvimento da cidade e o bem-estar dos cidadãos.
-          </p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Valores</h2>
+          <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <li>Governação participativa e inclusiva;</li>
+            <li>Promoção e preservação da cultura de cidadania;</li>
+            <li>Transparência e comprometimento na gestão da coisa pública;</li>
+            <li>Eficiência no funcionamento dos órgãos técnicos e administrativos.</li>
+          </ul>
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Estrutura Organizacional</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Divisão Administrativa</h2>
           <p className="text-gray-700 leading-relaxed mb-4">
-            A Câmara Municipal da Beira está organizada em várias vereações e departamentos, 
-            cada um responsável por áreas específicas de atuação:
+            Em conformidade com a nova divisão administrativa, a cidade da Beira passa a estar
+            organizada em 7 postos administrativos municipais e 28 bairros, constituindo esta
+            estrutura uma base essencial para a organização territorial, a prestação de serviços
+            públicos e a aproximação da governação aos munícipes.
           </p>
           <ul className="list-disc list-inside space-y-2 text-gray-700">
-            <li>Vereação de Desenvolvimento Humano e Institucional</li>
-            <li>Vereação do Plano, Finanças</li>
-            <li>Vereação de Construção, Infra-Estruturas e Urbanização</li>
-            <li>Vereação de Gestão Urbana e Equipamentos</li>
-            <li>Vereação da Saúde, Acção Social e Género</li>
-            <li>Vereação da Indústria, Comércio, Turismo, Mercados e Feiras</li>
-            <li>Vereação de Protecção Civil, Sistema de Transportes, Trânsito Rodoviário e Energia</li>
-            <li>Vereação de Juventude e Desportos</li>
-            <li>Vereação de Agro-Pecuária, Pescas e Meio Ambiente</li>
-            <li>Vereação de Educação e Cultura</li>
+            <li>P.A. Municipal de Palmeiras</li>
+            <li>P.A. Municipal do Chiveve</li>
+            <li>P.A. Municipal da Munhava</li>
+            <li>P.A. Municipal de Nhaconjo</li>
+            <li>P.A. Municipal de Inhamízua</li>
+            <li>P.A. Municipal de Manga Loforte</li>
+            <li>P.A. Municipal de Nhangau</li>
           </ul>
-          <p className="text-gray-700 leading-relaxed mt-4">
-            Para visualizar a estrutura completa, consulte o{" "}
-            <a href="/municipio/organograma" className="text-blue-600 hover:text-blue-800 underline">
-              Organograma
-            </a>
-            .
-          </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contactos</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Consideração Final</h2>
           <div className="space-y-2 text-gray-700">
             <p>
-              <strong>Endereço:</strong> Câmara Municipal da Beira, Beira, Moçambique
-            </p>
-            <p>
-              <strong>Telefone:</strong> (Informação a adicionar)
-            </p>
-            <p>
-              <strong>Email:</strong> (Informação a adicionar)
+              A cidade da Beira reúne condições geográficas, logísticas, económicas e institucionais
+              que a colocam numa posição de elevado relevo no contexto nacional e regional. A
+              consolidação da sua visão estratégica, alicerçada numa governação participativa, numa
+              administração territorial estruturada e na valorização do seu posicionamento
+              geoestratégico, constitui um elemento fundamental para o desenvolvimento sustentável
+              e inclusivo do Município.
             </p>
           </div>
         </section>
