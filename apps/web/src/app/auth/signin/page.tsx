@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Poppins } from "next/font/google";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,13 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [resetBanner, setResetBanner] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search).get("reset");
+    setResetBanner(q === "1");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +71,11 @@ export default function SignInPage() {
         </div>
 
         <div className="rounded-xl bg-white p-8 shadow-lg">
+          {resetBanner && (
+            <div className="mb-6 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+              {t("auth.passwordResetSuccessBanner")}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               label={t("auth.emailOrPhone")}
@@ -83,6 +95,15 @@ export default function SignInPage() {
               required
               autoComplete="current-password"
             />
+
+            <div className="text-right">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                {t("auth.forgotPassword")}
+              </Link>
+            </div>
 
             {error && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
