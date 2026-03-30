@@ -135,6 +135,28 @@ aws cloudfront list-distributions --query "DistributionList.Items[].{Id:Id,Domai
 
 Open ALB and CloudFront URLs in browser and verify the app loads.
 
+### Production smoke-test checklist (app)
+
+Run this quick checklist after each production deploy:
+
+- [ ] Sign in works (valid user, no 500/error page)
+- [ ] Sign up works (new citizen can register with 3 security questions)
+- [ ] Forgot password works (phone -> questions -> reset -> sign in with new password)
+- [ ] Incidents list loads and incident detail page opens
+- [ ] Admin can open removed incidents page and view soft-deleted records
+- [ ] Core navigation pages load (`/`, auth pages, incidents pages, admin pages)
+- [ ] No critical runtime errors in PM2 logs on app instances
+
+Optional quick command checks:
+
+```bash
+pm2 logs ogp-web --lines 200 --nostream
+```
+
+```bash
+cd /opt/ogp/app && pnpm --filter @ogp/database exec prisma migrate status
+```
+
 ## 5) If Targets Are Unhealthy
 
 1. Check app process and local response on each instance with SSM:
