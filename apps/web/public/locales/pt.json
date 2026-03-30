@@ -52,7 +52,11 @@
     "email": "Email",
     "password": "Palavra-passe",
     "signingIn": "A entrar...",
-    "invalidCredentials": "Email ou palavra-passe inválidos"
+    "invalidCredentials": "Email ou palavra-passe inválidos",
+    "createAccount": "Criar conta",
+    "or": "Ou",
+    "emailOrPhone": "Email ou telefone",
+    "emailOrPhonePlaceholder": "email@exemplo.com ou 841234567"
   },
   "polls": {
     "activePoll": "Sondagem Ativa",

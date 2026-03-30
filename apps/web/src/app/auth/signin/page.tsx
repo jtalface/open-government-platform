@@ -56,7 +56,7 @@ export default function SignInPage() {
             <Logo size="lg" fixedWidth={120} fixedHeight={120} className="justify-center" />
           </div>
           <h1
-            className={`${beiraTitleFont.className} text-3xl font-semibold tracking-tight text-gray-900`}
+            className={`${beiraTitleFont.className} mt-2 text-3xl font-semibold tracking-tight text-gray-900`}
           >
             Beira É Wawa
           </h1>
@@ -66,13 +66,13 @@ export default function SignInPage() {
         <div className="rounded-xl bg-white p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              label="Email ou Telefone"
+              label={t("auth.emailOrPhone")}
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="username"
-              placeholder="email@exemplo.com ou 841234567"
+              placeholder={t("auth.emailOrPhonePlaceholder")}
             />
 
             <Input
@@ -88,22 +88,23 @@ export default function SignInPage() {
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" isLoading={isLoading}>
+            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
               {isLoading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Não tem uma conta?{" "}
-              <Link
-                href="/auth/signup"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Criar conta
-              </Link>
-            </p>
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-sm font-medium text-gray-500">{t("auth.or")}</span>
+            <div className="h-px flex-1 bg-gray-200" />
           </div>
+
+          <Link
+            href="/auth/signup"
+            className="inline-flex h-14 w-full items-center justify-center rounded-lg border-2 border-gray-300 bg-transparent text-base font-medium text-gray-900 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+          >
+            {t("auth.createAccount")}
+          </Link>
         </div>
 
         <ZeusBranding />
@@ -111,4 +112,3 @@ export default function SignInPage() {
     </div>
   );
 }
-

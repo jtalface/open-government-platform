@@ -52,7 +52,11 @@
     "email": "Email",
     "password": "Password",
     "signingIn": "Signing in...",
-    "invalidCredentials": "Invalid email or password"
+    "invalidCredentials": "Invalid email or password",
+    "createAccount": "Create account",
+    "or": "Or",
+    "emailOrPhone": "Email or phone",
+    "emailOrPhonePlaceholder": "you@example.com or 841234567"
   },
   "polls": {
     "activePoll": "Active Poll",
