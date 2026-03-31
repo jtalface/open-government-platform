@@ -1,0 +1,123 @@
+# Open Government Platform - Funcionalidades
+
+Este documento descreve as funcionalidades do produto atualmente implementadas no código do `open-government-platform` (aplicação web, rotas de API e modelo de perfis).
+
+## 1) Autenticação e Acesso à Conta
+
+- Início de sessão por credenciais com email ou telefone + palavra-passe.
+- Fluxo de registo de novos cidadãos.
+- Recuperação de palavra-passe com perguntas de segurança e endpoint de redefinição.
+- Gestão de sessão com NextAuth, incluindo perfil e contexto de município no JWT/sessão.
+- Rotas protegidas para páginas e APIs específicas por perfil.
+
+## 2) Controlo de Acesso por Perfis (RBAC)
+
+- Hierarquia de três níveis: `CITIZEN` < `MANAGER` < `ADMIN`.
+- Verificações de perfil no servidor para todas as mutações protegidas de API.
+- Autorização com escopo por município em ocorrências, canais, projetos, sondagens e operações administrativas.
+- Verificações por bairro para ações sensíveis do cidadão (por exemplo, regras de votação).
+- Tratamento de não autorizado/proibido com rota dedicada de UX (`/unauthorized`).
+
+## 3) Reporte de Ocorrências por Cidadãos
+
+- Formulário de criação de ocorrência com seleção de categoria, geolocalização e suporte a upload de media.
+- Experiência de listagem e filtragem de ocorrências.
+- Página de detalhe de ocorrência com visibilidade de linha temporal/comentários/estado.
+- Capacidade de comentar ocorrências.
+- Visualização de ocorrências no mapa para transparência geográfica.
+- Votação de ocorrências por utilizadores autenticados.
+
+## 4) Votação por Bairro e Priorização
+
+- Endpoint de voto por ocorrência com lógica de um voto por utilizador.
+- Restrições de elegibilidade por bairro na lógica de serviço/API.
+- Serviço de pontuação de importância que combina recência e relevância local.
+- Vistas orientadas à prioridade no dashboard e nos fluxos de ocorrências.
+
+## 5) Dashboard e Operações de Gestão
+
+- Estrutura de dashboard para gestor/admin com estatísticas do município.
+- Vistas de triagem de ocorrências e filtros de gestão.
+- Criação de tickets a partir de ocorrências.
+- Lista e detalhe de tickets para acompanhamento operacional.
+- Endpoint/fluxo de atualizações de ticket para acompanhamento do ciclo de vida.
+
+## 6) Módulos Públicos de Transparência
+
+- Vistas públicas de ocorrências e mapa para cidadãos.
+- Páginas públicas de informação municipal:
+  - visão geral do município (`/municipio/sobre`)
+  - organograma (`/municipio/organograma`)
+- Atualizações de projetos e canais orientadas à transparência.
+
+## 7) Canais Oficiais (Comunicação Municipal)
+
+- Lista de canais para cidadãos e feed de publicações por canal.
+- Criação de publicações por gestor/admin em canais autorizados.
+- Regras de edição e soft delete de publicações.
+- Gestão administrativa de canais:
+  - criar/atualizar canais
+  - ativar/desativar canais
+  - conceder/revogar permissões de publicação para gestores
+- Cobertura de API para operações de cidadão, gestor/admin e apenas admin.
+
+## 8) Gestão do Ciclo de Vida de Projetos
+
+- Lista e detalhe de projetos para todos os utilizadores.
+- Criação de projeto a partir de ticket aprovado/triado (fluxo admin).
+- Endpoints de fluxo de estado do projeto (planeamento/financiamento/atribuição/início de obra/conclusão).
+- Operações de arquivar/desarquivar.
+- Acompanhamento de atualizações e transparência da execução ao longo do tempo.
+
+## 9) Sondagens para Cidadãos
+
+- Sondagens binárias com escopo por município.
+- Visibilidade de sondagem ativa nas superfícies do cidadão.
+- Endpoint de votação autenticada com aplicação da regra de um voto por utilizador.
+- Operações do ciclo de vida da sondagem:
+  - rascunho
+  - ativar
+  - fechar
+  - arquivar
+- Visibilidade de resultados e controlos de gestão com base em perfil.
+
+## 10) Capacidades de Administração
+
+- Ponto de entrada do dashboard admin e páginas da secção administrativa.
+- Endpoints/páginas de gestão de utilizadores.
+- Endpoints/páginas de gestão de categorias.
+- Governação de canais e gestão de permissões.
+- Endpoints administrativos de insights/estatísticas do município.
+- Página de gestão de ocorrências removidas (soft delete) para fluxos admin.
+
+## 11) Internacionalização (i18n)
+
+- Recursos de tradução (`pt` e `en`) servidos a partir de ficheiros de locale.
+- Context/provider de tradução usado pelos componentes de UI.
+- Rótulos de navegação e conteúdo localizados nas superfícies de cidadão.
+
+## 12) Media e Uploads
+
+- Endpoint de API para upload de ocorrências.
+- Rota de recuperação de media carregado para ocorrências.
+- Integrações de infraestrutura para armazenamento em cloud/objetos.
+
+## 13) Progressive Web App (PWA)
+
+- Manifest web e metadados de ícones da aplicação.
+- Registo de service worker com comportamento de fallback seguro.
+- Fluxo de instalação em Android:
+  - suporte a `beforeinstallprompt`
+  - CTA de instalação mostrado apenas quando elegível.
+- Fluxo de orientação de instalação em iOS Safari:
+  - dica in-app para "Adicionar ao ecrã principal"
+  - deteção de modo standalone
+  - persistência de dismiss.
+
+## 14) Fundamentos de Plataforma e Arquitetura
+
+- Configuração de monorepo com pacotes partilhados (`database`, `types`, `ui`, `api-client`).
+- Frontend Next.js App Router e backend em rotas de API no mesmo deploy.
+- Modelo de dados com Prisma + PostgreSQL/PostGIS.
+- Módulos de auditoria/log para operações sensíveis.
+- Recursos de infraestrutura como código em `infra` para produção.

@@ -96,22 +96,23 @@ export default function SignInPage() {
               autoComplete="current-password"
             />
 
-            <div className="text-right">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                {t("auth.forgotPassword")}
-              </Link>
-            </div>
-
             {error && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-              {isLoading ? t("auth.signingIn") : t("auth.signIn")}
-            </Button>
+            <div>
+              <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
+                {isLoading ? t("auth.signingIn") : t("auth.signIn")}
+              </Button>
+              <div className="mt-[3px] text-right">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                >
+                  {t("auth.forgotPassword")}
+                </Link>
+              </div>
+            </div>
           </form>
 
           <div className="my-6 flex items-center gap-3">

@@ -16,18 +16,28 @@ export function IosInstallHint() {
           ⤴
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900">Instale esta app no iPhone</p>
-          <p className="mt-1 text-sm text-gray-600">
-            Toque em Partilhar e depois em <strong>Adicionar ao Ecrã principal</strong>.
-          </p>
+          <p className="text-sm font-medium text-gray-900">Como instalar o app:</p>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-gray-600">
+            <li>
+              Clica em "<strong className="text-gray-800">…</strong>" no canto inferior direito.
+            </li>
+            <li>
+              Clica em <strong className="text-gray-800">Partilhar</strong>.
+            </li>
+            <li>
+              Clica em <strong className="text-gray-800">Adicionar ao Ecrã principal</strong>.
+            </li>
+          </ol>
         </div>
         <button
           type="button"
           onClick={dismiss}
-          className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          className="-mr-1 -mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
           aria-label="Fechar dica de instalação"
         >
-          Fechar
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
     </div>

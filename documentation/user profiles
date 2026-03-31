@@ -1,0 +1,67 @@
+# Open Government Platform - Perfis de Utilizador
+
+Este documento define os três perfis centrais do produto no OGP, as suas responsabilidades, limites de acesso e capacidades.
+
+## 1) Cidadão (`CITIZEN`)
+
+### Missão
+Permitir que os residentes reportem problemas, participem na priorização cívica e acompanhem a ação municipal com transparência.
+
+### Capacidades Principais
+- Criar ocorrências com categoria, localização e media opcional.
+- Consultar ocorrências em formato de lista e mapa.
+- Ver detalhes da ocorrência e contexto de progresso.
+- Votar em ocorrências quando elegível pelas regras de bairro/município.
+- Ler canais oficiais do município e publicações públicas.
+- Ver projetos e atualizações públicas.
+- Ver e votar em sondagens municipais ativas.
+
+### Restrições
+- Sem acesso a dashboard ou ações administrativas.
+- Sem administração de canais ou gestão de projetos/tickets.
+- Sem gestão de perfis/utilizadores/categorias/permissões de canal.
+
+## 2) Gestor (`MANAGER`)
+
+### Missão
+Operar fluxos municipais do dia a dia através da triagem de contributos dos cidadãos e coordenação de resposta por tickets, canais e sondagens.
+
+### Capacidades Principais
+- Todas as capacidades de leitura/uso do cidadão no contexto do seu município.
+- Aceder ao dashboard de gestão e às vistas operacionais.
+- Triar ocorrências e criar/gerir tickets.
+- Adicionar atualizações de tickets e monitorizar desempenho do serviço.
+- Publicar conteúdo oficial em canais para os quais tenha permissão explícita.
+- Criar/gerir as suas sondagens (e acompanhar resultados conforme a política).
+
+### Restrições
+- Não executa todas as tarefas de governação administrativa.
+- Não gere perfis/permissões da plataforma de forma global, salvo fluxos concedidos por admin.
+- A governação de canais/projetos é mais limitada do que no perfil admin.
+
+## 3) Administrador (`ADMIN`)
+
+### Missão
+Governar a configuração da plataforma municipal, políticas e controlo de acesso, assegurando qualidade de execução e transparência.
+
+### Capacidades Principais
+- Acesso completo às funcionalidades de gestor e cidadão.
+- Gerir utilizadores e atribuição de perfis.
+- Gerir categorias e configurações administrativas-chave.
+- Criar/atualizar/desativar canais oficiais.
+- Conceder/revogar permissões de publicação em canais.
+- Gerir todas as sondagens dentro do escopo do município.
+- Criar/editar/gerir estado/arquivar projetos.
+- Aceder a páginas administrativas e endpoints de estatísticas.
+- Tratar fluxos administrativos de ocorrências removidas (soft delete).
+
+### Restrições
+- Escopo limitado pelo modelo de tenancy por município e regras de negócio do sistema.
+- Continua sujeito às restrições do modelo de dados e validações de API.
+
+## Princípios Transversais aos Perfis
+
+- A autenticação é obrigatória para operações protegidas.
+- Os três perfis operam com escopo de dados por município.
+- RBAC é aplicado tanto na API como na UI.
+- Ações auditáveis são registadas por padrões de serviço/auditoria.
