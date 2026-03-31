@@ -8,6 +8,7 @@ import { Logo } from "./Logo";
 import { UserDropdown } from "./UserDropdown";
 import { MunicipalityDropdown } from "./MunicipalityDropdown";
 import { InstallPwaButton } from "./InstallPwaButton";
+import { IosInstallHint } from "./IosInstallHint";
 
 interface CitizenHeaderProps {
   session: any;
@@ -162,6 +163,7 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
           </div>
         )}
       </div>
+      <IosInstallHint />
     </header>
   );
 }

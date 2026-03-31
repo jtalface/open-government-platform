@@ -1,19 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isAndroidDevice } from "./device";
+import { isAndroidDevice, isStandaloneMode } from "./device";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
-}
-
-function isStandaloneMode(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return window.matchMedia("(display-mode: standalone)").matches;
 }
 
 export function usePwaInstall() {
