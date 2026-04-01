@@ -4,7 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function MunicipalityDropdown() {
+type MunicipalityDropdownProps = {
+  /** Light text on gradient header (e.g. admin shell) */
+  variant?: "default" | "onDark";
+};
+
+export function MunicipalityDropdown({ variant = "default" }: MunicipalityDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -23,15 +28,21 @@ export function MunicipalityDropdown() {
 
   const isActive = pathname === "/municipio/sobre" || pathname === "/municipio/organograma";
 
+  const buttonClass =
+    variant === "onDark"
+      ? isActive
+        ? "bg-white bg-opacity-20 text-white"
+        : "text-white text-opacity-80 hover:bg-white hover:bg-opacity-10"
+      : isActive
+        ? "bg-blue-50 text-blue-600"
+        : "text-gray-600 hover:bg-gray-100";
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-          isActive
-            ? "bg-blue-50 text-blue-600"
-            : "text-gray-600 hover:bg-gray-100"
-        }`}
+        className={`flex items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${buttonClass}`}
       >
         <span className="mr-1 lg:mr-2">🏛️</span>
         <span className="hidden lg:inline">Município</span>

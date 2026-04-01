@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "../Logo";
 import { UserDropdown } from "../UserDropdown";
+import { MunicipalityDropdown } from "../MunicipalityDropdown";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -14,7 +15,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigation = [
+  const baseNavigation = [
     { name: t("nav.dashboard"), href: "/dashboard", icon: "📊" },
     { name: t("nav.incidents"), href: "/dashboard/incidents", icon: "📍" },
     { name: t("nav.map"), href: "/dashboard/map", icon: "🗺️" },
@@ -23,9 +24,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: t("nav.polls"), href: "/dashboard/polls", icon: "📊" },
   ];
 
-  if (session?.user.role === "ADMIN") {
-    navigation.push({ name: t("nav.admin"), href: "/admin", icon: "⚙️" });
-  }
+  const adminNavItem =
+    session?.user.role === "ADMIN"
+      ? { name: t("nav.admin"), href: "/admin", icon: "⚙️" }
+      : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,7 +42,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-2">
-              {navigation.map((item) => (
+              {baseNavigation.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -54,6 +56,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   {item.name}
                 </Link>
               ))}
+              <MunicipalityDropdown />
+              {adminNavItem && (
+                <Link
+                  href={adminNavItem.href}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                    pathname === adminNavItem.href
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="mr-2">{adminNavItem.icon}</span>
+                  {adminNavItem.name}
+                </Link>
+              )}
             </nav>
 
             {/* Right side */}
@@ -91,7 +107,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {isMobileMenuOpen && (
             <div className="lg:hidden border-t border-gray-200 py-4">
               <nav className="flex flex-col gap-2">
-                {navigation.map((item) => (
+                {baseNavigation.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -106,6 +122,44 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     {item.name}
                   </Link>
                 ))}
+                <Link
+                  href="/municipio/sobre"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                    pathname === "/municipio/sobre"
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="mr-3">📄</span>
+                  Sobre o Município
+                </Link>
+                <Link
+                  href="/municipio/organograma"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                    pathname === "/municipio/organograma"
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="mr-3">📊</span>
+                  Organograma
+                </Link>
+                {adminNavItem && (
+                  <Link
+                    href={adminNavItem.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                      pathname === adminNavItem.href
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="mr-3">{adminNavItem.icon}</span>
+                    {adminNavItem.name}
+                  </Link>
+                )}
               </nav>
             </div>
           )}

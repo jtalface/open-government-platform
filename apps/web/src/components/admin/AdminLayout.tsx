@@ -8,6 +8,7 @@ import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "../Logo";
 import { UserDropdown } from "../UserDropdown";
 import { CreatePostButton } from "../channels/CreatePostButton";
+import { MunicipalityDropdown } from "../MunicipalityDropdown";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -54,6 +55,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   {item.name}
                 </Link>
               ))}
+              <MunicipalityDropdown variant="onDark" />
             </nav>
 
             {/* Right side */}
@@ -113,6 +115,30 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     {item.name}
                   </Link>
                 ))}
+                <Link
+                  href="/municipio/sobre"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                    pathname === "/municipio/sobre"
+                      ? "bg-white bg-opacity-20 text-white"
+                      : "text-white text-opacity-80 hover:bg-white hover:bg-opacity-10"
+                  }`}
+                >
+                  <span className="mr-3">📄</span>
+                  Sobre o Município
+                </Link>
+                <Link
+                  href="/municipio/organograma"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                    pathname === "/municipio/organograma"
+                      ? "bg-white bg-opacity-20 text-white"
+                      : "text-white text-opacity-80 hover:bg-white hover:bg-opacity-10"
+                  }`}
+                >
+                  <span className="mr-3">📊</span>
+                  Organograma
+                </Link>
                 <div className="mt-2 pt-2 border-t border-white border-opacity-20">
                   <CreatePostButton />
                 </div>

@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
-import { CreateUserModal } from "./CreateUserModal";
+import { Card, Badge, LoadingSpinner } from "@ogp/ui";
 
 export function UserManagement() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", searchTerm, roleFilter],
@@ -84,7 +82,7 @@ export function UserManagement() {
     <div className="space-y-6">
       {/* Filters */}
       <Card className="p-6">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Pesquisar
@@ -110,12 +108,6 @@ export function UserManagement() {
               <option value="MANAGER">Manager</option>
               <option value="ADMIN">Admin</option>
             </select>
-          </div>
-
-          <div className="flex items-end">
-            <Button onClick={() => setIsCreateModalOpen(true)} className="w-full">
-              ➕ Criar Utilizador
-            </Button>
           </div>
         </div>
       </Card>
@@ -176,11 +168,6 @@ export function UserManagement() {
           ))
         )}
       </div>
-
-      {/* Create User Modal */}
-      {isCreateModalOpen && (
-        <CreateUserModal onClose={() => setIsCreateModalOpen(false)} />
-      )}
     </div>
   );
 }
