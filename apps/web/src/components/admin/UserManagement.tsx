@@ -97,7 +97,7 @@ export function UserManagement() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Role</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Permissões</label>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
