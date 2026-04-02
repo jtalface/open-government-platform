@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { PwaBootstrap } from "@/components/PwaBootstrap";
 import { IosInstallHint } from "@/components/IosInstallHint";
-import { InstallPwaButton } from "@/components/InstallPwaButton";
+import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,8 +45,8 @@ export default function RootLayout({
         <Providers>
           <PwaBootstrap />
           <IosInstallHint />
-          {/* Android: show install CTA on every route (e.g. sign-in) once beforeinstallprompt fires */}
-          <InstallPwaButton className="fixed bottom-4 start-4 z-50 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70" />
+          {/* Android: slim top bar (beforeinstallprompt) — Facebook-style install strip */}
+          <InstallPwaBanner />
           {children}
         </Providers>
       </body>
