@@ -3,19 +3,23 @@
   "short_name": "Beira",
   "description": "Plataforma municipal de reporte de ocorrências e transparência",
   "start_url": "/",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "/icons/pwa-192.svg",
+      "src": "/icons/pwa-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icons/pwa-512.svg",
+      "src": "/icons/pwa-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

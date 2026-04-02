@@ -7,8 +7,6 @@ import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { Logo } from "./Logo";
 import { UserDropdown } from "./UserDropdown";
 import { MunicipalityDropdown } from "./MunicipalityDropdown";
-import { InstallPwaButton } from "./InstallPwaButton";
-
 interface CitizenHeaderProps {
   session: any;
   activeTab?: "incidents" | "map" | "channels" | "projects";
@@ -85,7 +83,6 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
 
             {/* Desktop user controls */}
             <div className="hidden md:flex items-center gap-2 lg:gap-4">
-              <InstallPwaButton />
               <UserDropdown userName={session.user.name} />
               {showDashboard && (
                 <Link
@@ -157,7 +154,6 @@ export function CitizenHeader({ session, activeTab }: CitizenHeaderProps) {
                   {t("nav.dashboard")}
                 </Link>
               )}
-              <InstallPwaButton className="mt-2 rounded-lg bg-blue-600 px-4 py-3 text-base font-medium text-white hover:bg-blue-700" />
             </nav>
           </div>
         )}

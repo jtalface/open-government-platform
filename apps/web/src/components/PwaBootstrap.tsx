@@ -2,33 +2,28 @@
 
 import { useEffect } from "react";
 
-function canRegisterServiceWorker(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  const isLocalhost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-  return "serviceWorker" in navigator && (window.isSecureContext || isLocalhost);
-}
-
+/**
+ * Register the service worker as early as possible so Chrome can consider the
+ * app installable (beforeinstallprompt). Secure contexts only (HTTPS,
+ * localhost, 127.0.0.1); plain http://LAN-IP will reject — we catch and ignore.
+ */
 export function PwaBootstrap() {
   useEffect(() => {
-    if (!canRegisterServiceWorker()) {
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
       return;
     }
 
     const registerServiceWorker = () => {
       navigator.serviceWorker.register("/sw.js").catch(() => {
-        // Fail silently to avoid affecting normal site rendering.
+        // Expected on http://192.168.x.x etc. (not a secure context).
       });
     };
 
-    if (document.readyState === "complete") {
-      registerServiceWorker();
-      return;
-    }
+    registerServiceWorker();
 
-    window.addEventListener("load", registerServiceWorker, { once: true });
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", registerServiceWorker, { once: true });
+    }
 
     return () => {
       window.removeEventListener("load", registerServiceWorker);

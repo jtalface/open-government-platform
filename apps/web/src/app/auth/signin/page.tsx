@@ -67,7 +67,6 @@ export default function SignInPage() {
           >
             Beira É Wawa
           </h1>
-          <p className="mt-2 text-gray-600">{t("auth.signInTitle")}</p>
         </div>
 
         <div className="rounded-xl bg-white p-8 shadow-lg">
