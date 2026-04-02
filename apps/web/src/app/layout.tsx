@@ -9,7 +9,8 @@ import { InstallPwaButton } from "@/components/InstallPwaButton";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cidade da Beira - Plataforma de Transparência",
+  title: "Beira É Wawa - Plataforma de Governação Aberta",
+  applicationName: "Beira É Wawa",
   description: "Plataforma municipal de reporte de ocorrências e transparência",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Beira",
+    title: "Beira É Wawa",
   },
 };
 
