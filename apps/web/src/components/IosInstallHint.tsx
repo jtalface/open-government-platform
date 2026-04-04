@@ -16,7 +16,7 @@ export function IosInstallHint() {
           ⤴
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900">Como instalar o app:</p>
+          <p className="text-sm font-medium text-gray-900">Como instalar o aplicativo:</p>
           <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-gray-600">
             <li>
               Clica em "<strong className="text-gray-800">…</strong>" no canto inferior direito.
