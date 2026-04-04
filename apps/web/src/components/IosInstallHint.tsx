@@ -25,7 +25,7 @@ export function IosInstallHint() {
               Clica em <strong className="text-gray-800">Partilhar</strong>.
             </li>
             <li>
-              Clica em <strong className="text-gray-800">Adicionar ao Ecrã principal</strong>.
+              Clica em <strong className="text-gray-800">Adicionar ao ecrã principal</strong>.
             </li>
           </ol>
         </div>
