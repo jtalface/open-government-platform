@@ -5,7 +5,7 @@ import { isIosDevice, isSafariOnIos, isStandaloneMode } from "./device";
 
 const DISMISS_KEY = "ogp_ios_install_hint_dismissed_at";
 const HINT_DELAY_MS = 1500;
-const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const DISMISS_TTL_MS = 100;//7 * 24 * 60 * 60 * 1000;
 
 function wasDismissedRecently(): boolean {
   if (typeof window === "undefined") {
