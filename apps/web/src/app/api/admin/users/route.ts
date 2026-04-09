@@ -29,10 +29,14 @@ export async function GET(request: NextRequest) {
 
     const search = searchParams.get("search");
     const role = searchParams.get("role");
+    const includeInactive = searchParams.get("includeInactive") === "1";
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
 
-    const where: any = { municipalityId };
+    const where: Record<string, unknown> = { municipalityId };
+    if (!includeInactive) {
+      where.active = true;
+    }
 
     if (search) {
       where.OR = [

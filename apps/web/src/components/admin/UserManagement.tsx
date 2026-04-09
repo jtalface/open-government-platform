@@ -4,20 +4,40 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, Badge, LoadingSpinner } from "@ogp/ui";
 
+async function readApiErrorMessage(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    return body?.error?.message ?? body?.message ?? `Erro ${res.status}`;
+  } catch {
+    return `Erro ${res.status}`;
+  }
+}
+
 export function UserManagement() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("");
+  const [includeInactive, setIncludeInactive] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-users", searchTerm, roleFilter],
+    queryKey: ["admin-users", searchTerm, roleFilter, includeInactive],
     queryFn: async () => {
+      setListError(null);
       const params = new URLSearchParams();
       if (searchTerm) params.set("search", searchTerm);
       if (roleFilter) params.set("role", roleFilter);
+      if (includeInactive) params.set("includeInactive", "1");
 
-      const response = await fetch(`/api/admin/users?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch users");
+      const response = await fetch(`/api/admin/users?${params}`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const msg = await readApiErrorMessage(response);
+        setListError(msg);
+        throw new Error(msg);
+      }
       return response.json();
     },
   });
@@ -27,29 +47,54 @@ export function UserManagement() {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ role }),
       });
-      if (!res.ok) throw new Error("Failed to update user");
+      if (!res.ok) throw new Error(await readApiErrorMessage(res));
       return res.json();
     },
+    onMutate: () => setActionError(null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
+    onError: (e: Error) => setActionError(e.message),
   });
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "DELETE",
+        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete user");
+      if (!res.ok) throw new Error(await readApiErrorMessage(res));
       return res.json();
     },
+    onMutate: () => setActionError(null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
+    onError: (e: Error) => setActionError(e.message),
+  });
+
+  const reactivateUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ active: true }),
+      });
+      if (!res.ok) throw new Error(await readApiErrorMessage(res));
+      return res.json();
+    },
+    onMutate: () => setActionError(null),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    },
+    onError: (e: Error) => setActionError(e.message),
   });
 
   const handleRoleChange = (userId: string, newRole: string) => {
@@ -61,10 +106,20 @@ export function UserManagement() {
   const handleDeleteUser = (userId: string, userName: string) => {
     if (
       confirm(
-        `Tem a certeza que deseja eliminar o utilizador "${userName}"? Esta ação não pode ser revertida.`
+        `Desativar o utilizador "${userName}"? Deixará de poder entrar na plataforma. Os registos existentes (ocorrências, etc.) mantêm-se.`
       )
     ) {
       deleteUserMutation.mutate(userId);
+    }
+  };
+
+  const handleReactivateUser = (userId: string, userName: string) => {
+    if (
+      confirm(
+        `Reativar o utilizador "${userName}"? Voltará a poder entrar com as credenciais existentes.`
+      )
+    ) {
+      reactivateUserMutation.mutate(userId);
     }
   };
 
@@ -80,6 +135,17 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
+      {listError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {listError}
+        </div>
+      )}
+      {actionError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {actionError}
+        </div>
+      )}
+
       {/* Filters */}
       <Card className="p-6">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -110,6 +176,16 @@ export function UserManagement() {
             </select>
           </div>
         </div>
+
+        <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={includeInactive}
+            onChange={(e) => setIncludeInactive(e.target.checked)}
+            className="rounded border-gray-300"
+          />
+          Mostrar utilizadores inativos
+        </label>
       </Card>
 
       {/* Users List */}
@@ -149,19 +225,33 @@ export function UserManagement() {
                   <select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={user.active === false}
+                    className="rounded-lg border border-gray-300 px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="CITIZEN">Cidadão</option>
                     <option value="MANAGER">Manager</option>
                     <option value="ADMIN">Admin</option>
                   </select>
 
-                  <button
-                    onClick={() => handleDeleteUser(user.id, user.name)}
-                    className="rounded-lg bg-red-50 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100"
-                  >
-                    🗑️ Eliminar
-                  </button>
+                  {user.active !== false ? (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteUser(user.id, user.name)}
+                      disabled={deleteUserMutation.isPending || reactivateUserMutation.isPending}
+                      className="rounded-lg bg-red-50 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      🗑️ Desativar
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleReactivateUser(user.id, user.name)}
+                      disabled={reactivateUserMutation.isPending || deleteUserMutation.isPending}
+                      className="rounded-lg bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+                    >
+                      ↩ Reativar
+                    </button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -191,4 +281,3 @@ function getRoleBadgeVariant(
   };
   return variants[role] || "info";
 }
-

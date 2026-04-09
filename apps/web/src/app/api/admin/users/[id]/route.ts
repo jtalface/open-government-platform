@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { requireAdmin } from "@/lib/auth/rbac";
-import { successResponse, handleApiError } from "@/lib/api/error-handler";
+import { successResponse, handleApiError, errorResponse } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 import { z } from "zod";
 
@@ -28,19 +28,23 @@ export async function PATCH(
     const body = await request.json();
     const input = UpdateUserSchema.parse(body);
 
-    // Don't allow users to modify themselves
     if (params.id === session!.user.id && input.role) {
-      return Response.json(
-        { error: { message: "Não pode alterar a sua própria role" } },
-        { status: 400 }
-      );
+      return errorResponse("BAD_REQUEST", "Não pode alterar a sua própria role", 400);
+    }
+
+    if (params.id === session!.user.id && input.active === false) {
+      return errorResponse("BAD_REQUEST", "Não pode desativar a sua própria conta", 400);
+    }
+
+    const scoped = await prisma.user.findFirst({
+      where: { id: params.id, municipalityId: session!.user.municipalityId },
+    });
+    if (!scoped) {
+      return errorResponse("NOT_FOUND", "Utilizador não encontrado", 404);
     }
 
     const user = await prisma.user.update({
-      where: {
-        id: params.id,
-        municipalityId: session!.user.municipalityId,
-      },
+      where: { id: params.id },
       data: input,
       include: {
         neighborhood: {
@@ -52,15 +56,24 @@ export async function PATCH(
       },
     });
 
-    // Create audit log
+    const auditAction =
+      input.role != null
+        ? "ROLE_CHANGE"
+        : input.active === true && scoped.active === false
+          ? "STATUS_CHANGE"
+          : "UPDATE";
+
     await prisma.auditLog.create({
       data: {
         municipalityId: session!.user.municipalityId,
         actorUserId: session!.user.id,
         entityType: "User",
         entityId: user.id,
-        action: input.role ? "ROLE_CHANGE" : "UPDATE",
-        metadata: input,
+        action: auditAction,
+        metadata: {
+          ...input,
+          ...(input.active === true && scoped.active === false ? { reactivated: true } : {}),
+        },
       },
     });
 
@@ -72,7 +85,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/admin/users/:id
- * Delete a user
+ * Soft-delete (deactivate): hard delete fails on FKs (incidents, tickets, audit, etc.).
  */
 export async function DELETE(
   request: NextRequest,
@@ -82,22 +95,30 @@ export async function DELETE(
     const session = await getServerSession(authOptions);
     requireAdmin(session);
 
-    // Don't allow users to delete themselves
     if (params.id === session!.user.id) {
-      return Response.json(
-        { error: { message: "Não pode eliminar a sua própria conta" } },
-        { status: 400 }
-      );
+      return errorResponse("BAD_REQUEST", "Não pode eliminar a sua própria conta", 400);
     }
 
-    const user = await prisma.user.delete({
+    const existing = await prisma.user.findFirst({
       where: {
         id: params.id,
         municipalityId: session!.user.municipalityId,
       },
     });
 
-    // Create audit log
+    if (!existing) {
+      return errorResponse("NOT_FOUND", "Utilizador não encontrado", 404);
+    }
+
+    if (!existing.active) {
+      return successResponse({ message: "Utilizador já estava inativo." });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: params.id },
+      data: { active: false },
+    });
+
     await prisma.auditLog.create({
       data: {
         municipalityId: session!.user.municipalityId,
@@ -108,11 +129,12 @@ export async function DELETE(
         metadata: {
           userName: user.name,
           userEmail: user.email,
+          softDelete: true,
         },
       },
     });
 
-    return successResponse({ message: "User deleted successfully" });
+    return successResponse({ message: "Utilizador desativado com sucesso." });
   } catch (error) {
     return handleApiError(error);
   }
