@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@ogp/database";
 import { UserRole } from "@ogp/types";
+import { normalizeSyntheticEmailForLookup } from "@/lib/auth/synthetic-email";
 
 /**
  * NextAuth configuration with credentials provider
@@ -21,8 +22,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email/telefone e senha são obrigatórios");
         }
 
-        // Try to find user by email or phone
-        const identifier = credentials.email;
+        const identifier = credentials.email.trim();
         let user = await prisma.user.findUnique({
           where: { email: identifier },
           include: {
@@ -30,7 +30,19 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        // If not found by email, try by phone
+        // Legacy synthetic domain (pre-migration) still works if typed as login id
+        if (!user) {
+          const normalizedEmail = normalizeSyntheticEmailForLookup(identifier);
+          if (normalizedEmail !== identifier) {
+            user = await prisma.user.findUnique({
+              where: { email: normalizedEmail },
+              include: {
+                municipality: true,
+              },
+            });
+          }
+        }
+
         if (!user) {
           user = await prisma.user.findFirst({
             where: { phone: identifier },

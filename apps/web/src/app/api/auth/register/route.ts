@@ -7,6 +7,7 @@ import {
   isValidSecurityQuestionId,
   normalizeSecurityAnswer,
 } from "@/lib/auth/security-questions";
+import { syntheticEmailFromPhone } from "@/lib/auth/synthetic-email";
 
 // Beira city bounding box
 const BEIRA_BOUNDING_BOX = {
@@ -135,8 +136,8 @@ export async function POST(request: NextRequest) {
       bcrypt.hash(normalizeSecurityAnswer(securityAnswer3), 10),
     ]);
 
-    // Generate a unique email-like identifier from phone (since email is required in schema)
-    const emailFromPhone = `${phone.replace(/\D/g, "")}@phone.beira.gov.mz`;
+    // Unique email-like identifier from phone (email is required in schema)
+    const emailFromPhone = syntheticEmailFromPhone(phone);
 
     // Create user as CITIZEN
     const user = await prisma.user.create({
