@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
       where: { phone },
       select: {
         id: true,
-        role: true,
         municipalityId: true,
         securityAnswer1: true,
         securityAnswer2: true,
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
 
-    if (!user || user.role !== "CITIZEN") {
+    if (!user) {
       return genericError;
     }
 

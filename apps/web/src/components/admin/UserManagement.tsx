@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, Badge, LoadingSpinner } from "@ogp/ui";
+import { Card, Badge, LoadingSpinner, Modal, Button } from "@ogp/ui";
 
 async function readApiErrorMessage(res: Response): Promise<string> {
   try {
@@ -13,13 +14,28 @@ async function readApiErrorMessage(res: Response): Promise<string> {
   }
 }
 
+type PasswordResetModal =
+  | null
+  | {
+      step: "form";
+      userId: string;
+      userName: string;
+      mode: "generate" | "manual";
+      manualPassword: string;
+      formError: string | null;
+    }
+  | { step: "result"; userId: string; userName: string; temporaryPassword: string };
+
 export function UserManagement() {
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("");
   const [includeInactive, setIncludeInactive] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [passwordResetModal, setPasswordResetModal] = useState<PasswordResetModal>(null);
+  const [passwordResetSubmitting, setPasswordResetSubmitting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", searchTerm, roleFilter, includeInactive],
@@ -123,6 +139,100 @@ export function UserManagement() {
     }
   };
 
+  const openPasswordResetModal = (userId: string, userName: string) => {
+    setPasswordResetModal({
+      step: "form",
+      userId,
+      userName,
+      mode: "generate",
+      manualPassword: "",
+      formError: null,
+    });
+  };
+
+  const closePasswordResetModal = () => {
+    setPasswordResetModal(null);
+    setPasswordResetSubmitting(false);
+  };
+
+  const submitPasswordReset = async () => {
+    if (!passwordResetModal || passwordResetModal.step !== "form") return;
+
+    const { userId, userName, mode, manualPassword } = passwordResetModal;
+    const trimmed = manualPassword.trim();
+
+    if (mode === "manual") {
+      if (trimmed.length < 6) {
+        setPasswordResetModal({
+          step: "form",
+          userId,
+          userName,
+          mode,
+          manualPassword,
+          formError: "A palavra-passe manual deve ter pelo menos 6 caracteres.",
+        });
+        return;
+      }
+    }
+
+    setPasswordResetSubmitting(true);
+    setPasswordResetModal({
+      step: "form",
+      userId,
+      userName,
+      mode,
+      manualPassword,
+      formError: null,
+    });
+
+    try {
+      const body =
+        mode === "manual" && trimmed.length >= 6 ? { newPassword: trimmed } : {};
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        throw new Error(await readApiErrorMessage(res));
+      }
+      const json = await res.json();
+      const temporaryPassword = json?.data?.temporaryPassword as string | undefined;
+      if (!temporaryPassword) {
+        throw new Error("Resposta inválida do servidor.");
+      }
+      setPasswordResetModal({
+        step: "result",
+        userId,
+        userName,
+        temporaryPassword,
+      });
+      setActionError(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Erro ao repor a palavra-passe.";
+      setPasswordResetModal({
+        step: "form",
+        userId,
+        userName,
+        mode,
+        manualPassword,
+        formError: message,
+      });
+    } finally {
+      setPasswordResetSubmitting(false);
+    }
+  };
+
+  const copyTemporaryPassword = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      alert("Não foi possível copiar automaticamente. Copie manualmente o texto mostrado.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -135,6 +245,131 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
+      {passwordResetModal && (
+        <Modal
+          isOpen
+          onClose={closePasswordResetModal}
+          title={
+            passwordResetModal.step === "result"
+              ? "Palavra-passe reposta"
+              : `Repor palavra-passe — ${passwordResetModal.userName}`
+          }
+          size="md"
+        >
+          {passwordResetModal.step === "form" ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Será definida uma nova palavra-passe para este utilizador. Entregue-a por um canal
+                seguro (telefone, presencialmente, etc.). O sistema não envia esta palavra-passe por
+                email.
+              </p>
+
+              <fieldset className="space-y-2">
+                <legend className="sr-only">Modo de reposição</legend>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="resetMode"
+                    checked={passwordResetModal.mode === "generate"}
+                    onChange={() =>
+                      setPasswordResetModal({
+                        ...passwordResetModal,
+                        mode: "generate",
+                        formError: null,
+                      })
+                    }
+                    className="border-gray-300"
+                  />
+                  Gerar automaticamente (recomendado)
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="resetMode"
+                    checked={passwordResetModal.mode === "manual"}
+                    onChange={() =>
+                      setPasswordResetModal({
+                        ...passwordResetModal,
+                        mode: "manual",
+                        formError: null,
+                      })
+                    }
+                    className="border-gray-300"
+                  />
+                  Definir manualmente
+                </label>
+              </fieldset>
+
+              {passwordResetModal.mode === "manual" && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Nova palavra-passe
+                  </label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={passwordResetModal.manualPassword}
+                    onChange={(e) =>
+                      setPasswordResetModal({
+                        ...passwordResetModal,
+                        manualPassword: e.target.value,
+                        formError: null,
+                      })
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Mínimo 6 caracteres"
+                  />
+                </div>
+              )}
+
+              {passwordResetModal.formError && (
+                <p className="text-sm text-red-600">{passwordResetModal.formError}</p>
+              )}
+
+              <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+                <Button type="button" variant="secondary" onClick={closePasswordResetModal}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void submitPasswordReset()}
+                  isLoading={passwordResetSubmitting}
+                >
+                  Repor palavra-passe
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                Guarde esta palavra-passe agora. <strong>Não voltará a ser mostrada</strong> se
+                fechar esta janela.
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Palavra-passe temporária
+                </p>
+                <code className="block break-all rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
+                  {passwordResetModal.temporaryPassword}
+                </code>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => void copyTemporaryPassword(passwordResetModal.temporaryPassword)}
+                >
+                  Copiar
+                </Button>
+                <Button type="button" onClick={closePasswordResetModal}>
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
       {listError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {listError}
@@ -205,7 +440,7 @@ export function UserManagement() {
                       {getRoleLabel(user.role)}
                     </Badge>
                     {user.active === false && (
-                      <Badge variant="error">Inativo</Badge>
+                      <Badge variant="danger">Inativo</Badge>
                     )}
                   </div>
 
@@ -232,6 +467,21 @@ export function UserManagement() {
                     <option value="MANAGER">Manager</option>
                     <option value="ADMIN">Admin</option>
                   </select>
+
+                  {session?.user?.id !== user.id && (
+                    <button
+                      type="button"
+                      onClick={() => openPasswordResetModal(user.id, user.name)}
+                      disabled={
+                        passwordResetSubmitting ||
+                        deleteUserMutation.isPending ||
+                        reactivateUserMutation.isPending
+                      }
+                      className="rounded-lg bg-amber-50 px-3 py-1 text-sm font-medium text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      🔑 Repor palavra-passe
+                    </button>
+                  )}
 
                   {user.active !== false ? (
                     <button
@@ -273,11 +523,11 @@ function getRoleLabel(role: string): string {
 
 function getRoleBadgeVariant(
   role: string
-): "success" | "warning" | "error" | "info" {
-  const variants: Record<string, "success" | "warning" | "error" | "info"> = {
+): "success" | "warning" | "danger" | "info" {
+  const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
     CITIZEN: "info",
     MANAGER: "warning",
-    ADMIN: "error",
+    ADMIN: "danger",
   };
   return variants[role] || "info";
 }

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /**
  * POST /api/auth/forgot-password/questions
  * Body: { phone, locale?: "pt" | "en" }
- * Returns the three question labels for this account (citizens only with security setup).
+ * Returns the three question labels for this account (any role with phone + security setup).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
       where: { phone },
       select: {
         id: true,
-        role: true,
         securityQuestion1Id: true,
         securityQuestion2Id: true,
         securityQuestion3Id: true,
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user || user.role !== "CITIZEN") {
+    if (!user) {
       return Response.json(
         { error: { message: "Não encontrámos uma conta com este telefone." } },
         { status: 404 }
