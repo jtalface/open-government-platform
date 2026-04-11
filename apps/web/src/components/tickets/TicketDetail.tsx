@@ -27,7 +27,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
     },
   });
 
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isManager =
+    session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN";
 
   if (isLoading) {
     return (
@@ -75,8 +76,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             <p className="text-gray-700">{ticket.description}</p>
           </div>
 
-          {/* Admin Actions */}
-          {isAdmin && !hasProject && (
+          {/* Manager / admin */}
+          {isManager && !hasProject && (
             <Button onClick={() => setIsCreateProjectModalOpen(true)} className="ml-6">
               🏗️ {t("projects.createFromTicket")}
             </Button>

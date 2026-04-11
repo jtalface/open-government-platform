@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth-options";
-import { getProjectsByMunicipality, createProject } from "@/lib/services/project-service";
+import {
+  getProjectsByMunicipality,
+  createProject,
+  canManageProjects,
+} from "@/lib/services/project-service";
 import { handleApiError } from "@/lib/api/error-handler";
 import { z } from "zod";
 
 // Uses getServerSession (headers/cookies) so it must always run dynamically.
 export const dynamic = "force-dynamic";
 
+const imageEntry = z.union([z.string().min(1), z.object({ url: z.string().min(1) })]);
+
 const CreateProjectSchema = z.object({
   ticketId: z.string().uuid().optional(),
   title: z.string().min(1).max(200),
   description: z.string().min(10).max(5000),
+  descriptionMedia: z.array(imageEntry).max(3).optional(),
   categoryId: z.string().uuid(),
   budgetAmount: z.number().positive().optional(),
   budgetCurrency: z.string().optional(),
@@ -56,7 +63,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/projects
- * Create a new project (Admin only)
+ * Create a new project (manager or admin)
  */
 export async function POST(req: NextRequest) {
   try {
@@ -66,9 +73,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.role !== "ADMIN") {
+    const allowed = await canManageProjects(session.user.id, session.user.municipalityId);
+    if (!allowed) {
       return NextResponse.json(
-        { error: "Forbidden: Admin access required" },
+        { error: "Forbidden: Manager or admin access required" },
         { status: 403 }
       );
     }

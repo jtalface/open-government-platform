@@ -7,7 +7,7 @@ import { prisma } from "@ogp/database";
 
 /**
  * POST /api/projects/:projectId/archive
- * Archive a project (Admin only)
+ * Archive a project (manager or admin)
  */
 export async function POST(
   req: NextRequest,
@@ -46,7 +46,7 @@ export async function POST(
 
 /**
  * DELETE /api/projects/:projectId/archive
- * Unarchive a project (Admin only)
+ * Unarchive a project (manager or admin)
  */
 export async function DELETE(
   req: NextRequest,

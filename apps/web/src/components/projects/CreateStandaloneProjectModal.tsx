@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Modal, Button } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { ProjectImagePicker } from "./ProjectImagePicker";
 
 interface CreateStandaloneProjectModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: Cre
     fundingSource: "",
     biddingReference: "",
   });
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   // Fetch categories
   const { data: categories } = useQuery<Category[]>({
@@ -53,6 +55,7 @@ export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: Cre
         body: JSON.stringify({
           ...formData,
           budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : undefined,
+          descriptionMedia: imageUrls.length ? imageUrls.map((url) => ({ url })) : undefined,
         }),
       });
 
@@ -85,6 +88,7 @@ export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: Cre
         fundingSource: "",
         biddingReference: "",
       });
+      setImageUrls([]);
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -144,6 +148,8 @@ export function CreateStandaloneProjectModal({ isOpen, onClose, onSuccess }: Cre
             required
           />
         </div>
+
+        <ProjectImagePicker urls={imageUrls} onChange={setImageUrls} disabled={isSubmitting} />
 
         <div className="grid grid-cols-2 gap-4">
           <div>

@@ -4,12 +4,21 @@
  */
 
 import { prisma } from "@ogp/database";
-import type { ProjectStatus } from "@prisma/client";
+import type { Prisma, ProjectStatus } from "@prisma/client";
+import {
+  MAX_PROJECT_IMAGES,
+  type ProjectImageRef,
+} from "@/lib/projects/media";
+
+export type { ProjectImageRef } from "@/lib/projects/media";
+export { MAX_PROJECT_IMAGES } from "@/lib/projects/media";
 
 export interface CreateProjectInput {
   ticketId?: string; // Optional - can create project without ticket
   title: string;
   description: string;
+  /** Main description images (max 3) */
+  descriptionMedia?: ProjectImageRef[] | unknown;
   categoryId: string;
   budgetAmount?: number;
   budgetCurrency?: string;
@@ -20,6 +29,7 @@ export interface CreateProjectInput {
 export interface UpdateProjectInput {
   title?: string;
   description?: string;
+  descriptionMedia?: ProjectImageRef[] | unknown;
   categoryId?: string;
   budgetAmount?: number;
   budgetCurrency?: string;
@@ -30,7 +40,34 @@ export interface UpdateProjectInput {
 }
 
 /**
- * Check if user can create/edit projects (Admin only)
+ * Normalise and validate image list for projects / project updates.
+ */
+export function normalizeProjectImageList(raw: unknown): ProjectImageRef[] {
+  if (raw == null) return [];
+  if (!Array.isArray(raw)) {
+    throw new Error("Invalid image list");
+  }
+  if (raw.length > MAX_PROJECT_IMAGES) {
+    throw new Error(`At most ${MAX_PROJECT_IMAGES} images allowed`);
+  }
+  const out: ProjectImageRef[] = [];
+  for (const item of raw) {
+    if (typeof item === "string" && item.trim().length > 0) {
+      out.push({ url: item.trim() });
+      continue;
+    }
+    if (item && typeof item === "object" && typeof (item as { url?: string }).url === "string") {
+      const url = (item as { url: string }).url.trim();
+      if (url.length > 0) out.push({ url });
+      continue;
+    }
+    throw new Error("Invalid image entry");
+  }
+  return out;
+}
+
+/**
+ * Check if user can create/edit projects (managers and admins in the municipality)
  */
 export async function canManageProjects(userId: string, municipalityId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
@@ -42,7 +79,7 @@ export async function canManageProjects(userId: string, municipalityId: string):
     return false;
   }
 
-  return user.role === "ADMIN";
+  return user.role === "ADMIN" || user.role === "MANAGER";
 }
 
 /**
@@ -186,7 +223,7 @@ export async function createProject(
   // Verify admin can manage projects in this municipality
   const canManage = await canManageProjects(adminUserId, municipalityId);
   if (!canManage) {
-    throw new Error("Only admins can create projects");
+    throw new Error("Only managers and admins can create projects");
   }
 
   // If ticketId is provided, validate ticket and check for existing project
@@ -219,6 +256,8 @@ export async function createProject(
     }
   }
 
+  const descriptionMedia = normalizeProjectImageList(input.descriptionMedia) as unknown as Prisma.InputJsonValue;
+
   // Create the project
   return prisma.project.create({
     data: {
@@ -227,6 +266,7 @@ export async function createProject(
       categoryId: input.categoryId,
       title: input.title,
       description: input.description,
+      descriptionMedia,
       budgetAmount: input.budgetAmount || null,
       budgetCurrency: input.budgetCurrency || "MZN",
       fundingSource: input.fundingSource || null,
@@ -291,12 +331,18 @@ export async function updateProject(
 
   const canManage = await canManageProjects(adminUserId, project.municipalityId);
   if (!canManage) {
-    throw new Error("Only admins can update projects");
+    throw new Error("Only managers and admins can update projects");
+  }
+
+  const { descriptionMedia, ...rest } = input;
+  const data: Prisma.ProjectUpdateInput = { ...rest };
+  if (descriptionMedia !== undefined) {
+    data.descriptionMedia = normalizeProjectImageList(descriptionMedia) as unknown as Prisma.InputJsonValue;
   }
 
   return prisma.project.update({
     where: { id: projectId },
-    data: input,
+    data,
     include: {
       category: true,
       ticket: true,
@@ -328,7 +374,7 @@ export async function transitionProjectStatus(
 
   const canManage = await canManageProjects(adminUserId, project.municipalityId);
   if (!canManage) {
-    throw new Error("Only admins can change project status");
+    throw new Error("Only managers and admins can change project status");
   }
 
   // Validate status transitions
@@ -384,7 +430,7 @@ export async function archiveProject(projectId: string, adminUserId: string) {
 
   const canManage = await canManageProjects(adminUserId, project.municipalityId);
   if (!canManage) {
-    throw new Error("Only admins can archive projects");
+    throw new Error("Only managers and admins can archive projects");
   }
 
   return prisma.project.update({
@@ -415,7 +461,7 @@ export async function unarchiveProject(projectId: string, adminUserId: string) {
 
   const canManage = await canManageProjects(adminUserId, project.municipalityId);
   if (!canManage) {
-    throw new Error("Only admins can unarchive projects");
+    throw new Error("Only managers and admins can unarchive projects");
   }
 
   return prisma.project.update({
@@ -428,13 +474,14 @@ export async function unarchiveProject(projectId: string, adminUserId: string) {
 }
 
 /**
- * Create a project update
+ * Create a project update (append-only timeline entry)
  */
 export async function createProjectUpdate(
   projectId: string,
   message: string,
   authorUserId: string,
-  visibility: "PUBLIC" | "INTERNAL" = "PUBLIC"
+  visibility: "PUBLIC" | "INTERNAL" = "PUBLIC",
+  attachments?: unknown
 ) {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
@@ -445,6 +492,8 @@ export async function createProjectUpdate(
     throw new Error("Project not found");
   }
 
+  const attachmentJson = normalizeProjectImageList(attachments) as unknown as Prisma.InputJsonValue;
+
   return prisma.projectUpdate.create({
     data: {
       projectId,
@@ -452,6 +501,7 @@ export async function createProjectUpdate(
       authorUserId,
       message,
       visibility,
+      attachments: attachmentJson,
     },
     include: {
       author: {
@@ -462,5 +512,85 @@ export async function createProjectUpdate(
       },
     },
   });
+}
+
+export interface UpdateProjectUpdateInput {
+  message: string;
+  attachments?: unknown;
+  visibility: "PUBLIC" | "INTERNAL";
+}
+
+/**
+ * Edit an existing project update (manager/admin, same municipality).
+ */
+export async function updateProjectUpdate(
+  projectId: string,
+  updateId: string,
+  userId: string,
+  input: UpdateProjectUpdateInput
+) {
+  const row = await prisma.projectUpdate.findFirst({
+    where: { id: updateId, projectId },
+    include: {
+      project: { select: { municipalityId: true } },
+    },
+  });
+
+  if (!row) {
+    throw new Error("Update not found");
+  }
+
+  const canManage = await canManageProjects(userId, row.project.municipalityId);
+  if (!canManage) {
+    throw new Error("Only managers and admins can edit project updates");
+  }
+
+  const attachmentJson = normalizeProjectImageList(
+    input.attachments ?? []
+  ) as unknown as Prisma.InputJsonValue;
+
+  return prisma.projectUpdate.update({
+    where: { id: updateId },
+    data: {
+      message: input.message,
+      visibility: input.visibility,
+      attachments: attachmentJson,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Delete a project update (manager/admin, same municipality).
+ */
+export async function deleteProjectUpdate(projectId: string, updateId: string, userId: string) {
+  const row = await prisma.projectUpdate.findFirst({
+    where: { id: updateId, projectId },
+    include: {
+      project: { select: { municipalityId: true } },
+    },
+  });
+
+  if (!row) {
+    throw new Error("Update not found");
+  }
+
+  const canManage = await canManageProjects(userId, row.project.municipalityId);
+  if (!canManage) {
+    throw new Error("Only managers and admins can delete project updates");
+  }
+
+  await prisma.projectUpdate.delete({
+    where: { id: updateId },
+  });
+
+  return { id: updateId, projectId };
 }
 

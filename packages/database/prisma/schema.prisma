@@ -73,6 +73,9 @@ enum AuditAction {
   CHANNEL_POST_DELETED
   PROJECT_CREATED
   PROJECT_UPDATED
+  PROJECT_UPDATE_CREATED
+  PROJECT_UPDATE_UPDATED
+  PROJECT_UPDATE_DELETED
   PROJECT_STATUS_CHANGED
   PROJECT_ARCHIVED
   PROJECT_UNARCHIVED
@@ -541,6 +544,8 @@ model Project {
   categoryId          String
   title               String
   description         String         @db.Text
+  /// Up to 3 image refs `{ "url": string }[]` — enforced in application layer
+  descriptionMedia    Json           @default("[]")
   status              ProjectStatus  @default(OPEN)
   budgetAmount        Decimal?       @db.Decimal(15, 2)
   budgetCurrency      String         @default("USD")

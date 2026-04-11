@@ -36,7 +36,8 @@ export function ProjectsList() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isManager =
+    session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN";
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["projects", activeTab, selectedCategoryId],
@@ -112,9 +113,9 @@ export function ProjectsList() {
             </nav>
           </div>
 
-          {isAdmin && (
+          {isManager && (
             <Button onClick={() => setIsCreateModalOpen(true)} className="ml-6">
-{t("projects.createProject")}
+              {t("projects.createProject")}
             </Button>
           )}
         </div>

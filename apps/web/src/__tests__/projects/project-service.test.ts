@@ -48,7 +48,7 @@ describe("Project Service", () => {
       expect(result).toBe(true);
     });
 
-    it("should return false for manager", async () => {
+    it("should return true for manager in same municipality", async () => {
       (prisma.user.findUnique as any).mockResolvedValue({
         id: "manager-1",
         role: "MANAGER",
@@ -56,7 +56,7 @@ describe("Project Service", () => {
       });
 
       const result = await canManageProjects("manager-1", "muni-1");
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     it("should return false for citizen", async () => {
@@ -163,7 +163,7 @@ describe("Project Service", () => {
       ).rejects.toThrow("Project already exists for this ticket");
     });
 
-    it("should throw error if user is not admin", async () => {
+    it("should throw error if user is not manager or admin", async () => {
       const mockTicket = {
         id: "ticket-1",
         municipalityId: "muni-1",
@@ -174,8 +174,8 @@ describe("Project Service", () => {
       (prisma.ticket.findUnique as any).mockResolvedValue(mockTicket);
       (prisma.project.findUnique as any).mockResolvedValue(null);
       (prisma.user.findUnique as any).mockResolvedValue({
-        id: "manager-1",
-        role: "MANAGER",
+        id: "citizen-1",
+        role: "CITIZEN",
         municipalityId: "muni-1",
       });
 
@@ -186,9 +186,9 @@ describe("Project Service", () => {
             title: "Test Project",
             description: "Test Description",
           },
-          "manager-1"
+          "citizen-1"
         )
-      ).rejects.toThrow("Only admins can create projects");
+      ).rejects.toThrow("Only managers and admins can create projects");
     });
   });
 
@@ -258,7 +258,7 @@ describe("Project Service", () => {
       ).rejects.toThrow("Assigned vendor/contractor is required for ASSIGNED status");
     });
 
-    it("should throw error if user is not admin", async () => {
+    it("should throw error if user is not manager or admin", async () => {
       const mockProject = {
         id: "project-1",
         municipalityId: "muni-1",
@@ -267,14 +267,14 @@ describe("Project Service", () => {
 
       (prisma.project.findUnique as any).mockResolvedValue(mockProject);
       (prisma.user.findUnique as any).mockResolvedValue({
-        id: "manager-1",
-        role: "MANAGER",
+        id: "citizen-1",
+        role: "CITIZEN",
         municipalityId: "muni-1",
       });
 
       await expect(
-        transitionProjectStatus("project-1", "PLANNING" as any, "manager-1")
-      ).rejects.toThrow("Only admins can change project status");
+        transitionProjectStatus("project-1", "PLANNING" as any, "citizen-1")
+      ).rejects.toThrow("Only managers and admins can change project status");
     });
   });
 
@@ -318,7 +318,7 @@ describe("Project Service", () => {
       );
     });
 
-    it("should throw error if user is not admin", async () => {
+    it("should throw error if user is not manager or admin", async () => {
       const mockProject = {
         id: "project-1",
         municipalityId: "muni-1",
@@ -327,13 +327,13 @@ describe("Project Service", () => {
 
       (prisma.project.findUnique as any).mockResolvedValue(mockProject);
       (prisma.user.findUnique as any).mockResolvedValue({
-        id: "manager-1",
-        role: "MANAGER",
+        id: "citizen-1",
+        role: "CITIZEN",
         municipalityId: "muni-1",
       });
 
-      await expect(archiveProject("project-1", "manager-1")).rejects.toThrow(
-        "Only admins can archive projects"
+      await expect(archiveProject("project-1", "citizen-1")).rejects.toThrow(
+        "Only managers and admins can archive projects"
       );
     });
   });
@@ -378,7 +378,7 @@ describe("Project Service", () => {
       );
     });
 
-    it("should throw error if user is not admin", async () => {
+    it("should throw error if user is not manager or admin", async () => {
       const mockProject = {
         id: "project-1",
         municipalityId: "muni-1",
@@ -393,7 +393,7 @@ describe("Project Service", () => {
       });
 
       await expect(unarchiveProject("project-1", "citizen-1")).rejects.toThrow(
-        "Only admins can unarchive projects"
+        "Only managers and admins can unarchive projects"
       );
     });
   });

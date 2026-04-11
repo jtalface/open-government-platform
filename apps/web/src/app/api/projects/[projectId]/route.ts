@@ -46,7 +46,7 @@ export async function GET(
 
 /**
  * PATCH /api/projects/:projectId
- * Update project (Admin only)
+ * Update project (manager or admin)
  */
 export async function PATCH(
   req: NextRequest,

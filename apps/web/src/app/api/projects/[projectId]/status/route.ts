@@ -7,7 +7,7 @@ import { prisma } from "@ogp/database";
 
 /**
  * POST /api/projects/:projectId/status
- * Change project status (Admin only)
+ * Change project status (manager or admin)
  */
 export async function POST(
   req: NextRequest,

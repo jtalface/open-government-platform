@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth-options";
-import { createProjectFromTicket } from "@/lib/services/project-service";
+import { createProjectFromTicket, canManageProjects } from "@/lib/services/project-service";
 import { handleApiError } from "@/lib/api/error-handler";
 import { prisma } from "@ogp/database";
 
 /**
  * POST /api/tickets/:ticketId/project
- * Create a project from a ticket (Admin only)
+ * Create a project from a ticket (manager or admin)
  */
 export async function POST(
   req: NextRequest,
@@ -18,6 +18,11 @@ export async function POST(
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await canManageProjects(session.user.id, session.user.municipalityId);
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await req.json();
@@ -34,6 +39,7 @@ export async function POST(
         ticketId: params.id,
         title: body.title,
         description: body.description,
+        descriptionMedia: body.descriptionMedia,
         categoryId: body.categoryId,
         budgetAmount: body.budgetAmount,
         budgetCurrency: body.budgetCurrency,

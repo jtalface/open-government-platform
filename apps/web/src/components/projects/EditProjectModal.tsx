@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Modal, Button } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { ProjectImagePicker } from "./ProjectImagePicker";
+import { parseStoredImageUrls } from "@/lib/projects/media";
 
 interface EditProjectModalProps {
   project: any;
@@ -22,6 +24,9 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
     biddingReference: project.biddingReference || "",
     assignedToName: project.assignedToName || "",
   });
+  const [imageUrls, setImageUrls] = useState<string[]>(() =>
+    parseStoredImageUrls(project.descriptionMedia)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +39,7 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
         body: JSON.stringify({
           ...formData,
           budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount as any) : null,
+          descriptionMedia: imageUrls.map((url) => ({ url })),
         }),
       });
 
@@ -76,6 +82,8 @@ export function EditProjectModal({ project, onClose, onSuccess }: EditProjectMod
             required
           />
         </div>
+
+        <ProjectImagePicker urls={imageUrls} onChange={setImageUrls} disabled={isSubmitting} />
 
         <div className="grid grid-cols-2 gap-4">
           <div>

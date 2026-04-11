@@ -8,6 +8,9 @@ import { Card, Badge, LoadingSpinner, Button } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
 import { EditProjectModal } from "./EditProjectModal";
 import { ChangeStatusModal } from "./ChangeStatusModal";
+import { AddProjectUpdateModal } from "./AddProjectUpdateModal";
+import { EditProjectUpdateModal, type ProjectUpdateEditShape } from "./EditProjectUpdateModal";
+import { parseStoredImageUrls } from "@/lib/projects/media";
 
 interface ProjectDetailProps {
   projectId: string;
@@ -29,6 +32,8 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
   const queryClient = useQueryClient();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState<ProjectUpdateEditShape | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
 
   const { data: project, isLoading, error } = useQuery({
@@ -41,9 +46,30 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
     },
   });
 
-  const isAdmin = session?.user?.role === "ADMIN";
   const isManager =
     session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN";
+
+  const handleDeleteUpdate = async (updateId: string) => {
+    if (!confirm(t("projects.confirmDeleteUpdate"))) return;
+    try {
+      const res = await fetch(`/api/projects/${projectId}/updates/${updateId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg =
+          (typeof err.error === "object" && err.error?.message) ||
+          (typeof err.error === "string" && err.error) ||
+          err.message;
+        throw new Error(msg || "Failed");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : t("projects.errorDeletingUpdate"));
+    }
+  };
 
   const handleArchive = async () => {
     if (!confirm(t("projects.archiveProject") + "?")) return;
@@ -105,6 +131,10 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
     );
   }
 
+  const mainImages = parseStoredImageUrls(project.descriptionMedia);
+  const updates = project.updates ?? [];
+  const showUpdatesSection = isManager || updates.length > 0;
+
   const formatBudget = () => {
     if (!project.budgetAmount) return t("common.notAvailable");
     return new Intl.NumberFormat("pt-PT", {
@@ -131,7 +161,6 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
       <Link
         href="/projects"
         className="inline-flex items-center text-sm text-blue-600 hover:underline"
@@ -139,11 +168,9 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
         ← {t("common.back")}
       </Link>
 
-      {/* Header Card */}
       <Card className="p-6">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {/* Category */}
+          <div className="min-w-0 flex-1 pr-4">
             <div className="mb-3 flex items-center gap-2">
               <span
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full text-base"
@@ -157,10 +184,8 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
               <span className="font-medium text-gray-700">{project.category.name}</span>
             </div>
 
-            {/* Title */}
             <h1 className="mb-2 text-3xl font-bold text-gray-900">{project.title}</h1>
 
-            {/* Status */}
             <div className="mb-4">
               <Badge variant={STATUS_COLORS[project.status] || "default"} size="lg">
                 {getStatusLabel()}
@@ -172,13 +197,28 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
               )}
             </div>
 
-            {/* Description */}
             <p className="text-gray-700 leading-relaxed">{project.description}</p>
+
+            {mainImages.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-3">
+                {mainImages.map((url, idx) => (
+                  <a
+                    key={`main-${idx}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-40 w-40 overflow-hidden rounded-lg border border-gray-200 shadow-sm"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="h-full w-full object-cover hover:opacity-95" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Admin Actions */}
-          {isAdmin && (
-            <div className="ml-6 flex flex-col gap-2">
+          {isManager && (
+            <div className="flex shrink-0 flex-col gap-2">
               {!project.archivedAt && (
                 <>
                   <Button onClick={() => setIsEditModalOpen(true)} variant="secondary" size="sm">
@@ -190,6 +230,13 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
                     size="sm"
                   >
                     🔄 {t("projects.changeStatus")}
+                  </Button>
+                  <Button
+                    onClick={() => setIsAddUpdateModalOpen(true)}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    ➕ {t("projects.addUpdate")}
                   </Button>
                   <Button
                     onClick={handleArchive}
@@ -216,13 +263,9 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
         </div>
       </Card>
 
-      {/* Details Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Project Information */}
         <Card className="p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            {t("projects.projectTitle")}
-          </h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("projects.projectTitle")}</h2>
           <div className="space-y-3">
             <InfoRow label={t("projects.budget")} value={formatBudget()} />
             <InfoRow
@@ -240,7 +283,6 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
           </div>
         </Card>
 
-        {/* Timeline */}
         <Card className="p-6">
           <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("projects.timeline")}</h2>
           <div className="space-y-3">
@@ -255,13 +297,10 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
         </Card>
       </div>
 
-      {/* Linked Ticket/Incident */}
       {project.ticket &&
         ((isManager && (
           <Card className="p-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
-              {t("projects.linkedTicket")}
-            </h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("projects.linkedTicket")}</h2>
             <Link
               href={`/dashboard/tickets/${project.ticket.id}`}
               className="block rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
@@ -297,38 +336,96 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
               </Card>
             )))}
 
-      {/* Project Updates */}
-      {project.updates && project.updates.length > 0 && (
-        <Card className="p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("projects.updates")}</h2>
-          <div className="space-y-4">
-            {project.updates.map((update: any) => (
-              <div key={update.id} className="border-l-4 border-blue-500 pl-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-gray-700">{update.message}</p>
-                    <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-                      <span>{update.author.name}</span>
-                      <span>•</span>
-                      <span>{formatDate(update.createdAt)}</span>
-                      {update.visibility === "INTERNAL" && (
-                        <>
+      {showUpdatesSection && (
+        <Card className="p-6 md:p-8">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">{t("projects.updatesSectionTitle")}</h2>
+            {isManager && !project.archivedAt && (
+              <Button onClick={() => setIsAddUpdateModalOpen(true)} variant="secondary" size="sm">
+                ➕ {t("projects.addUpdate")}
+              </Button>
+            )}
+          </div>
+
+          {updates.length === 0 && (
+            <p className="text-gray-600">{t("projects.noUpdatesYet")}</p>
+          )}
+
+          {updates.length > 0 && (
+            <div className="space-y-8">
+              {updates.map((update: { id: string; message: string; attachments: unknown; author: { name: string }; createdAt: string; visibility: string }) => {
+                const attUrls = parseStoredImageUrls(update.attachments);
+                return (
+                  <article key={update.id} className="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="whitespace-pre-wrap text-gray-800">{update.message}</p>
+                        {attUrls.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            {attUrls.map((url, idx) => (
+                              <a
+                                key={`${update.id}-${idx}`}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block h-36 w-36 overflow-hidden rounded-lg border border-gray-200"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt="" className="h-full w-full object-cover" />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                          <span>{update.author.name}</span>
                           <span>•</span>
-                          <Badge variant="warning" size="sm">
-                            {t("projects.internalUpdate")}
-                          </Badge>
-                        </>
+                          <span>{formatDate(update.createdAt)}</span>
+                          {update.visibility === "INTERNAL" && (
+                            <>
+                              <span>•</span>
+                              <Badge variant="warning" size="sm">
+                                {t("projects.internalUpdate")}
+                              </Badge>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {isManager && !project.archivedAt && (
+                        <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-stretch">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() =>
+                              setEditingUpdate({
+                                id: update.id,
+                                message: update.message,
+                                visibility: update.visibility,
+                                attachments: update.attachments,
+                              })
+                            }
+                          >
+                            ✏️ {t("common.edit")}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => void handleDeleteUpdate(update.id)}
+                          >
+                            🗑 {t("common.delete")}
+                          </Button>
+                        </div>
                       )}
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 
-      {/* Modals */}
       {isEditModalOpen && (
         <EditProjectModal
           project={project}
@@ -352,6 +449,31 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
           }}
         />
       )}
+
+      {isAddUpdateModalOpen && (
+        <AddProjectUpdateModal
+          projectId={projectId}
+          onClose={() => setIsAddUpdateModalOpen(false)}
+          onSuccess={() => {
+            setIsAddUpdateModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+          }}
+        />
+      )}
+
+      {editingUpdate && (
+        <EditProjectUpdateModal
+          projectId={projectId}
+          update={editingUpdate}
+          onClose={() => setEditingUpdate(null)}
+          onSuccess={() => {
+            setEditingUpdate(null);
+            queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -364,4 +486,3 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

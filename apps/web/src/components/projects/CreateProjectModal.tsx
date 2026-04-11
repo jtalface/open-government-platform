@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Modal, Button } from "@ogp/ui";
 import { useTranslation } from "@/lib/i18n/TranslationContext";
+import { ProjectImagePicker } from "./ProjectImagePicker";
 
 interface CreateProjectModalProps {
   ticket: any;
@@ -22,6 +23,7 @@ export function CreateProjectModal({ ticket, onClose, onSuccess }: CreateProject
     fundingSource: "",
     biddingReference: "",
   });
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ export function CreateProjectModal({ ticket, onClose, onSuccess }: CreateProject
         body: JSON.stringify({
           ...formData,
           budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : null,
+          descriptionMedia: imageUrls.length ? imageUrls.map((url) => ({ url })) : undefined,
         }),
       });
 
@@ -84,6 +87,8 @@ export function CreateProjectModal({ ticket, onClose, onSuccess }: CreateProject
             required
           />
         </div>
+
+        <ProjectImagePicker urls={imageUrls} onChange={setImageUrls} disabled={isSubmitting} />
 
         <div className="grid grid-cols-2 gap-4">
           <div>
