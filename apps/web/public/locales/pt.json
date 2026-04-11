@@ -303,6 +303,8 @@
     "noOngoingProjects": "Não há projetos em andamento",
     "noCompletedProjects": "Não há projetos concluídos",
     "noArchivedProjects": "Não há projetos arquivados",
+    "cardHasImagesHint": "Este projeto inclui imagens na descrição",
+    "cardHasUpdatesHint": "Este projeto tem atualizações",
     "viewProject": "Ver Projeto",
     "createProject": "Criar Projeto",
     "createFromTicket": "Criar Projeto desta Senha",

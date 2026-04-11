@@ -14,6 +14,8 @@ interface Project {
   fundingSource: string | null;
   assignedToName: string | null;
   updatedAt: string;
+  hasImages?: boolean;
+  hasUpdates?: boolean;
   category: {
     id: string;
     name: string;
@@ -92,6 +94,31 @@ export function ProjectCard({ project }: { project: Project }) {
           {project.title}
         </h3>
 
+        {(project.hasImages || project.hasUpdates) && (
+          <div className="mb-3 flex flex-wrap items-center gap-3 text-gray-500">
+            {project.hasImages && (
+              <span
+                role="img"
+                className="inline-flex items-center text-sm"
+                title={t("projects.cardHasImagesHint")}
+                aria-label={t("projects.cardHasImagesHint")}
+              >
+                <PhotoMarkerIcon className="h-5 w-5 shrink-0 text-sky-600" />
+              </span>
+            )}
+            {project.hasUpdates && (
+              <span
+                role="img"
+                className="inline-flex items-center text-sm"
+                title={t("projects.cardHasUpdatesHint")}
+                aria-label={t("projects.cardHasUpdatesHint")}
+              >
+                <NewspaperMarkerIcon className="h-5 w-5 shrink-0 text-amber-700" />
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Description */}
         <p className="mb-4 flex-1 text-sm text-gray-600 line-clamp-3">{project.description}</p>
 
@@ -132,6 +159,48 @@ export function ProjectCard({ project }: { project: Project }) {
         </div>
       </Card>
     </Link>
+  );
+}
+
+/** Outline “photo” (gallery) — Heroicons-style */
+function PhotoMarkerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.75}
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  );
+}
+
+/** Outline “newspaper” (bulletin / atualizações) — Heroicons-style */
+function NewspaperMarkerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.75}
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+      />
+    </svg>
   );
 }
 

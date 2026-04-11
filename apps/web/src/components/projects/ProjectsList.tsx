@@ -19,6 +19,8 @@ interface Project {
   fundingSource: string | null;
   assignedToName: string | null;
   updatedAt: string;
+  hasImages?: boolean;
+  hasUpdates?: boolean;
   category: {
     id: string;
     name: string;

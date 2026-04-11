@@ -303,6 +303,8 @@
     "noOngoingProjects": "No ongoing projects",
     "noCompletedProjects": "No completed projects",
     "noArchivedProjects": "No archived projects",
+    "cardHasImagesHint": "This project includes images in the description",
+    "cardHasUpdatesHint": "This project has updates",
     "viewProject": "View Project",
     "createProject": "Create Project",
     "createFromTicket": "Create Project from Ticket",

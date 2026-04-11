@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
       categoryId,
       cursor,
       limit,
+      viewerRole: session.user.role,
     });
 
     return NextResponse.json({

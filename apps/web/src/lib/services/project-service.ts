@@ -8,6 +8,7 @@ import type { Prisma, ProjectStatus } from "@prisma/client";
 import {
   MAX_PROJECT_IMAGES,
   type ProjectImageRef,
+  parseStoredImageUrls,
 } from "@/lib/projects/media";
 
 export type { ProjectImageRef } from "@/lib/projects/media";
@@ -93,9 +94,12 @@ export async function getProjectsByMunicipality(
     categoryId?: string;
     cursor?: string;
     limit?: number;
+    /** Used to decide whether "has updates" counts only public updates (citizens). */
+    viewerRole?: string;
   } = {}
 ) {
   const limit = Math.min(options.limit || 20, 50);
+  const isCitizen = options.viewerRole === "CITIZEN";
   const where: any = {
     municipalityId,
   };
@@ -140,6 +144,11 @@ export async function getProjectsByMunicipality(
           name: true,
         },
       },
+      updates: {
+        ...(isCitizen ? { where: { visibility: "PUBLIC" as const } } : {}),
+        take: 1,
+        select: { id: true },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -154,7 +163,15 @@ export async function getProjectsByMunicipality(
   });
 
   const hasMore = projects.length > limit;
-  const items = hasMore ? projects.slice(0, -1) : projects;
+  const rawItems = hasMore ? projects.slice(0, -1) : projects;
+  const items = rawItems.map((p) => {
+    const { updates, descriptionMedia, ...rest } = p;
+    return {
+      ...rest,
+      hasImages: parseStoredImageUrls(descriptionMedia).length > 0,
+      hasUpdates: updates.length > 0,
+    };
+  });
   const nextCursor = hasMore ? items[items.length - 1].id : null;
 
   return {
