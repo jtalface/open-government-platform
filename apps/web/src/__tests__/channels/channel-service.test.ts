@@ -3,7 +3,7 @@
  * Tests for channel authorization and business logic
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@ogp/database";
 import {
   canPostToChannel,

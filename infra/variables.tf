@@ -35,6 +35,40 @@ variable "db_password_ssm_param" {
   type = string
 } # SSM param path
 
+variable "ses_from_email" {
+  type        = string
+  description = "Verified SES sender email stored in SSM."
+}
+
+variable "whatsapp_access_token" {
+  type        = string
+  sensitive   = true
+  description = "Meta WhatsApp Cloud API access token stored in SSM."
+}
+
+variable "whatsapp_phone_number_id" {
+  type        = string
+  description = "Meta WhatsApp Cloud API phone number ID stored in SSM."
+}
+
+variable "whatsapp_verify_token" {
+  type        = string
+  sensitive   = true
+  description = "Webhook verify token for Meta WhatsApp callbacks stored in SSM."
+}
+
+variable "whatsapp_api_version" {
+  type        = string
+  default     = "v21.0"
+  description = "Meta Graph API version used for WhatsApp Cloud API."
+}
+
+variable "meta_app_secret" {
+  type        = string
+  sensitive   = true
+  description = "Meta app secret used for webhook signature validation, stored in SSM."
+}
+
 # CloudFront custom domains (ACM must be in us-east-1 — CloudFront requirement)
 variable "cloudfront_aliases" {
   type        = list(string)

@@ -1,10 +1,13 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import twilio from "twilio";
 import { ContactInfo } from "@ogp/types";
+import {
+  normalizeWhatsAppRecipientDigits,
+  sendMetaWhatsAppTextMessage,
+} from "@/lib/services/whatsapp-cloud-api";
 
 /**
  * Notification service for sending emails and WhatsApp messages
- * Uses AWS SES for emails and Twilio for WhatsApp
+ * Uses AWS SES for emails and Meta WhatsApp Cloud API for WhatsApp
  */
 
 // SES is regional — must match where identities are verified (e.g. af-south-1 for this deployment).
@@ -20,11 +23,6 @@ const sesClient = new SESClient({
       }
     : undefined,
 });
-
-// Initialize Twilio client for WhatsApp
-const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  : null;
 
 /**
  * Email template for incident notification
@@ -204,7 +202,7 @@ export async function sendEmailNotification(
 }
 
 /**
- * Send WhatsApp message using Twilio
+ * Send WhatsApp text via Meta WhatsApp Cloud API (Graph).
  */
 export async function sendWhatsAppNotification(
   to: string,
@@ -215,15 +213,7 @@ export async function sendWhatsAppNotification(
   incidentUrl: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    // Check if Twilio is configured
-    if (!twilioClient) {
-      console.warn("Twilio not configured. Skipping WhatsApp notification.");
-      return { success: false, error: "Twilio not configured" };
-    }
-
-    const fromNumber = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886"; // Twilio sandbox number
-    const toNumber = toWhatsAppAddress(to);
-    
+    const toDigits = normalizeWhatsAppRecipientDigits(to);
     const message = getWhatsAppMessage(
       incidentTitle,
       incidentDescription,
@@ -232,21 +222,27 @@ export async function sendWhatsAppNotification(
       incidentUrl
     );
 
-    const twilioResponse = await twilioClient.messages.create({
-      from: fromNumber,
-      to: toNumber,
-      body: message,
-    });
+    const result = await sendMetaWhatsAppTextMessage(toDigits, message);
 
-    return {
-      success: true,
-      messageId: twilioResponse.sid,
-    };
-  } catch (error: any) {
-    console.error("Error sending WhatsApp notification:", error);
+    if (result.ok) {
+      return { success: true, messageId: result.messageId };
+    }
+
+    const detail =
+      result.graphCode != null
+        ? `${result.error} (code=${result.graphCode}${result.graphSubcode != null ? ` subcode=${result.graphSubcode}` : ""})`
+        : result.error;
+    console.error("Error sending WhatsApp notification:", { status: result.status, error: detail });
     return {
       success: false,
-      error: error.message || "Failed to send WhatsApp message",
+      error: detail,
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to send WhatsApp message";
+    console.error("Error sending WhatsApp notification:", message);
+    return {
+      success: false,
+      error: message,
     };
   }
 }
@@ -303,17 +299,4 @@ export async function notifyContact(
  */
 export function normalizePhoneNumber(phone: string): string {
   return phone.trim().replace(/\D/g, "");
-}
-
-/** Twilio WhatsApp "To" must look like whatsapp:+E164 */
-function toWhatsAppAddress(to: string): string {
-  const t = to.trim();
-  if (t.toLowerCase().startsWith("whatsapp:")) {
-    return t;
-  }
-  const digits = t.replace(/\D/g, "");
-  if (!digits) {
-    return t;
-  }
-  return `whatsapp:+${digits}`;
 }

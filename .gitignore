@@ -55,3 +55,4 @@ infra/.terraform/
 infra/terraform.tfstate
 infra/terraform.tfstate.*
 infra/tfplan
+infra/secrets.auto.tfvars

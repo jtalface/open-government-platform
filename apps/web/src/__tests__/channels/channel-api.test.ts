@@ -3,7 +3,7 @@
  * Integration tests for channel API endpoints
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@ogp/database";
 
 describe("Channel API Endpoints", () => {

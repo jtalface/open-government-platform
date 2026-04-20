@@ -321,9 +321,11 @@ S3_UPLOAD_PREFIX="incidents"
 SES_FROM_EMAIL="noreply@yourdomain.com"
 
 # Twilio (for WhatsApp notifications)
-TWILIO_ACCOUNT_SID="your-twilio-account-sid"
-TWILIO_AUTH_TOKEN="your-twilio-auth-token"
-TWILIO_WHATSAPP_FROM="whatsapp:+14155238886"
+WHATSAPP_ACCESS_TOKEN="meta-whatsapp-cloud-permanent-or-long-lived-token"
+WHATSAPP_PHONE_NUMBER_ID="from-meta-whatsapp-api-setup"
+WHATSAPP_VERIFY_TOKEN="random-string-for-webhook-verification"
+WHATSAPP_API_VERSION="v21.0"
+META_APP_SECRET="meta-app-secret-for-webhook-signature"
 
 # Application
 NODE_ENV="production"

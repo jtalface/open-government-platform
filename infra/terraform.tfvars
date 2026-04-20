@@ -1,17 +1,25 @@
 # Non-secret defaults for this project. If you already applied once, keep subnet CIDRs
 # identical to what is in state / AWS — do not change casually.
 
-aws_region            = "af-south-1"
-project_name          = "ogp"
-domain_name           = "beiraewawa.com" # metadata only today; custom DNS is in Route53/GoDaddy + ACM
+aws_region   = "af-south-1"
+project_name = "ogp"
+domain_name  = "beiraewawa.com" # metadata only today; custom DNS is in Route53/GoDaddy + ACM
 
-vpc_cidr              = "10.0.0.0/16"
-public_subnets        = ["10.0.1.0/24", "10.0.2.0/24"]
-private_subnets       = ["10.0.11.0/24", "10.0.12.0/24"]
-db_subnets            = ["10.0.21.0/24", "10.0.22.0/24"]
+vpc_cidr        = "10.0.0.0/16"
+public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnets = ["10.0.11.0/24", "10.0.12.0/24"]
+db_subnets      = ["10.0.21.0/24", "10.0.22.0/24"]
 
 db_username           = "ogp_admin"
 db_password_ssm_param = "/ogp/prod/db/password" # SSM SecureString path, not the password itself
+
+# Runtime params managed in SSM by Terraform (replace secrets before apply).
+ses_from_email           = "noreply@beiraewawa.com"
+whatsapp_access_token    = "REPLACE_META_WHATSAPP_ACCESS_TOKEN"
+whatsapp_phone_number_id = "REPLACE_PHONE_NUMBER_ID"
+whatsapp_verify_token    = "REPLACE_WEBHOOK_VERIFY_TOKEN"
+whatsapp_api_version     = "v21.0"
+meta_app_secret          = "REPLACE_META_APP_SECRET"
 
 # CloudFront HTTPS hostnames — ACM must be in us-east-1 (same cert you validated in GoDaddy).
 # Get ARN: aws acm list-certificates --region us-east-1 --query "CertificateSummaryList[].[DomainName,CertificateArn]" --output table

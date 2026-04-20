@@ -12,7 +12,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${local.name}-vpc" }
+  tags                 = { Name = "${local.name}-vpc" }
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -20,7 +20,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_subnet" "public" {
-  for_each = toset(var.public_subnets)
+  for_each                = toset(var.public_subnets)
   vpc_id                  = aws_vpc.main.id
   cidr_block              = each.value
   availability_zone       = data.aws_availability_zones.available.names[index(var.public_subnets, each.value) % length(data.aws_availability_zones.available.names)]
@@ -31,9 +31,9 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  for_each = toset(var.private_subnets)
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.value
+  for_each          = toset(var.private_subnets)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value
   availability_zone = data.aws_availability_zones.available.names[index(var.private_subnets, each.value) % length(data.aws_availability_zones.available.names)]
   tags = {
     Name = "${local.name}-private-${each.value}"
@@ -41,9 +41,9 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_subnet" "db" {
-  for_each = toset(var.db_subnets)
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.value
+  for_each          = toset(var.db_subnets)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value
   availability_zone = data.aws_availability_zones.available.names[index(var.db_subnets, each.value) % length(data.aws_availability_zones.available.names)]
   tags = {
     Name = "${local.name}-db-${each.value}"
@@ -148,9 +148,9 @@ resource "aws_iam_role" "ec2_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -198,6 +198,73 @@ data "aws_ssm_parameter" "db_password" {
   name = var.db_password_ssm_param
 }
 
+# App/runtime config in SSM (consumed by user-data + deploy scripts)
+resource "aws_ssm_parameter" "ses_from_email" {
+  name      = "/${local.name}/prod/ses/from_email"
+  type      = "String"
+  value     = var.ses_from_email
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-ses-from-email"
+  }
+}
+
+resource "aws_ssm_parameter" "whatsapp_access_token" {
+  name      = "/${local.name}/prod/whatsapp/access_token"
+  type      = "SecureString"
+  value     = var.whatsapp_access_token
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-whatsapp-access-token"
+  }
+}
+
+resource "aws_ssm_parameter" "whatsapp_phone_number_id" {
+  name      = "/${local.name}/prod/whatsapp/phone_number_id"
+  type      = "String"
+  value     = var.whatsapp_phone_number_id
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-whatsapp-phone-number-id"
+  }
+}
+
+resource "aws_ssm_parameter" "whatsapp_verify_token" {
+  name      = "/${local.name}/prod/whatsapp/verify_token"
+  type      = "SecureString"
+  value     = var.whatsapp_verify_token
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-whatsapp-verify-token"
+  }
+}
+
+resource "aws_ssm_parameter" "whatsapp_api_version" {
+  name      = "/${local.name}/prod/whatsapp/api_version"
+  type      = "String"
+  value     = var.whatsapp_api_version
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-whatsapp-api-version"
+  }
+}
+
+resource "aws_ssm_parameter" "meta_app_secret" {
+  name      = "/${local.name}/prod/meta/app_secret"
+  type      = "SecureString"
+  value     = var.meta_app_secret
+  overwrite = true
+
+  tags = {
+    Name = "${local.name}-meta-app-secret"
+  }
+}
+
 resource "aws_launch_template" "app" {
   name_prefix   = "${local.name}-lt-"
   image_id      = data.aws_ami.ubuntu.id
@@ -215,7 +282,7 @@ resource "aws_launch_template" "app" {
     project_name     = local.name
     repo_url         = "https://github.com/jtalface/open-government-platform.git"
     rds_endpoint     = aws_db_instance.postgres.address
-    env_file_ssm_key = "/${local.name}/.env"      # optional: or individual params
+    env_file_ssm_key = "/${local.name}/.env" # optional: or individual params
   }))
 }
 
@@ -344,7 +411,7 @@ data "aws_caller_identity" "current" {}
 # ---------- Route tables ----------
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-  tags = { Name = "${local.name}-public-rt" }
+  tags   = { Name = "${local.name}-public-rt" }
 }
 
 resource "aws_route" "public_internet" {
@@ -362,14 +429,14 @@ resource "aws_route_table_association" "public" {
 # ---------- NAT Gateway ----------
 resource "aws_eip" "nat" {
   domain = "vpc"
-  tags = { Name = "${local.name}-nat-eip" }
+  tags   = { Name = "${local.name}-nat-eip" }
 }
 
 # Put NAT in one public subnet (cost-optimized single NAT)
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = values(aws_subnet.public)[0].id
-  tags = { Name = "${local.name}-nat" }
+  tags          = { Name = "${local.name}-nat" }
 
   depends_on = [aws_internet_gateway.igw]
 }
@@ -377,7 +444,7 @@ resource "aws_nat_gateway" "main" {
 # ---------- Private route table ----------
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-  tags = { Name = "${local.name}-private-rt" }
+  tags   = { Name = "${local.name}-private-rt" }
 }
 
 resource "aws_route" "private_nat" {
@@ -395,7 +462,7 @@ resource "aws_route_table_association" "private" {
 # ---------- DB route table (no internet route) ----------
 resource "aws_route_table" "db" {
   vpc_id = aws_vpc.main.id
-  tags = { Name = "${local.name}-db-rt" }
+  tags   = { Name = "${local.name}-db-rt" }
 }
 
 resource "aws_route_table_association" "db" {

@@ -55,49 +55,39 @@ SES_FROM_EMAIL="noreply@beira.gov.mz"  # Verified sender email
 
 **Note**: If your EC2 instance has an IAM role with SES permissions, you can omit `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. The SDK will use the instance role automatically.
 
-## WhatsApp Setup (Twilio)
+## WhatsApp Setup (Meta WhatsApp Cloud API)
 
-### Step 1: Create Twilio Account
+### Step 1: Meta app and token
 
-1. **Sign up** at [https://www.twilio.com](https://www.twilio.com)
-2. **Verify your account** (may require phone verification)
-3. **Get your Account SID and Auth Token** from the Twilio Console dashboard
+1. **Meta for Developers** → create or select an app → add **WhatsApp**.
+2. From **WhatsApp → API setup**, copy **Phone number ID** and create a **permanent or long-lived** user/system token with **`whatsapp_business_messaging`** (and **`whatsapp_business_management`** if you manage templates via API).
 
-### Step 2: Set up WhatsApp Sandbox (for testing)
+### Step 2: Webhook (inbound + delivery status)
 
-1. **Go to Twilio Console** → **Messaging** → **Try it out** → **Send a WhatsApp message**
-2. **Join the sandbox** by sending the join code to the Twilio WhatsApp number
-3. **Note the sandbox WhatsApp number** (usually `whatsapp:+14155238886`)
+1. Callback URL: **`https://<your-host>/api/webhooks/whatsapp`**
+2. **Verify token**: choose a random string; set the same value as **`WHATSAPP_VERIFY_TOKEN`** in the app environment.
+3. **`META_APP_SECRET`**: from the app’s **Settings → Basic**; used to validate **`X-Hub-Signature-256`** on POST webhooks (recommended in production).
 
-### Step 3: Request WhatsApp Production Access
+### Step 3: Configure environment variables
 
-1. **Go to Twilio Console** → **Messaging** → **Settings** → **WhatsApp Senders**
-2. **Request WhatsApp Business API access**:
-   - Fill out the application form
-   - Provide business information
-   - Wait for approval (can take 1-3 business days)
-
-### Step 4: Configure Environment Variables
-
-Add to your `.env.production` file:
+Add to your `.env.production` (or `.env.local` for dev):
 
 ```env
-# Twilio Configuration
-TWILIO_ACCOUNT_SID="your-twilio-account-sid"
-TWILIO_AUTH_TOKEN="your-twilio-auth-token"
-TWILIO_WHATSAPP_FROM="whatsapp:+14155238886"  # Sandbox number or your approved WhatsApp number
+# Meta WhatsApp Cloud API
+WHATSAPP_ACCESS_TOKEN="your-token"
+WHATSAPP_PHONE_NUMBER_ID="your-phone-number-id"
+WHATSAPP_VERIFY_TOKEN="your-webhook-verify-token"
+WHATSAPP_API_VERSION="v21.0"
+META_APP_SECRET="your-meta-app-secret"
 ```
 
-## Phone Number Format
+## Phone number format
 
-The system automatically normalizes phone numbers:
-- Removes spaces and special characters
-- Adds Mozambique country code (258) if missing
-- Formats as: `258XXXXXXXXX` (without leading 0)
+The system **strips non-digits** only; it does **not** guess a missing country code. Store the **full international** number (e.g. Mozambique `258…`, US `1…`).
 
-**Example**:
-- Input: `+258 84 123 4567` → Normalized: `258841234567`
-- Input: `0841234567` → Normalized: `258841234567`
+**Examples** (after normalization for Cloud API `to`):
+- Input: `+258 84 123 4567` → `258841234567`
+- Input: `whatsapp:+14155552671` → `14155552671`
 
 ## Testing
 
@@ -110,8 +100,8 @@ The system automatically normalizes phone numbers:
 
 ### Test WhatsApp Notification
 
-1. Ensure a category has a `responsavel` with a phone number configured
-2. **For sandbox**: Join the Twilio WhatsApp sandbox first
+1. Ensure a category has a `responsavel` with a phone number configured (international digits).
+2. Ensure **`WHATSAPP_ACCESS_TOKEN`** and **`WHATSAPP_PHONE_NUMBER_ID`** are set.
 3. Create or find a triaged incident (status ≠ "OPEN")
 4. Click "Notificar vereação" button
 5. Check WhatsApp for the message
@@ -138,28 +128,17 @@ The system automatically normalizes phone numbers:
 
 ### WhatsApp Not Sending
 
-1. **Check Twilio credentials**:
-   - Verify Account SID and Auth Token are correct
-   - Check Twilio Console for account status
-
-2. **Check phone number format**:
-   - Ensure phone number includes country code
-   - Format should be: `258XXXXXXXXX` (Mozambique)
-
-3. **Sandbox limitations**:
-   - In sandbox mode, recipient must join the sandbox first
-   - Send join code to Twilio WhatsApp number to join
-
-4. **Check application logs**:
-   - Look for "Error sending WhatsApp notification" in server logs
-   - Check audit log metadata for notification results
+1. **Check Meta credentials**: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_API_VERSION` (must match the Graph version your app uses in Meta).
+2. **Check phone number format**: full international digits after normalization.
+3. **Graph errors**: open server logs for HTTP status and `error.message` / `code` from Meta.
+4. **Audit log**: notification attempt metadata on the incident notify API response.
 
 ### Both Services Not Working
 
 1. **Check package installation**:
    ```bash
    cd apps/web
-   pnpm list @aws-sdk/client-ses twilio
+   pnpm list @aws-sdk/client-ses
    ```
 
 2. **Verify environment variables are loaded**:
@@ -177,10 +156,8 @@ The system automatically normalizes phone numbers:
 - **Pricing**: $0.10 per 1,000 emails after free tier
 - **Very cost-effective** for low to medium volume
 
-### Twilio WhatsApp
-- **Sandbox**: Free (limited to sandbox participants)
-- **Production**: ~$0.005 per message (varies by country)
-- **Setup fee**: May apply for WhatsApp Business API approval
+### Meta WhatsApp Cloud API
+- Pricing and free tiers are defined by **Meta** for conversation-based billing; see current Meta/WhatsApp Business pricing for your region.
 
 ## Security Best Practices
 
@@ -188,12 +165,12 @@ The system automatically normalizes phone numbers:
 2. **Use IAM roles** instead of access keys when possible (EC2 instances)
 3. **Rotate credentials** regularly
 4. **Use environment-specific** credentials (dev/staging/production)
-5. **Monitor usage** in AWS SES and Twilio dashboards
+5. **Monitor usage** in AWS SES and Meta Business / WhatsApp tools
 6. **Set up billing alerts** in both services
 
 ## Alternative Solutions
 
-If AWS SES or Twilio are not suitable:
+If AWS SES or Meta WhatsApp Cloud API are not suitable:
 
 ### Email Alternatives
 - **SendGrid**: Popular email service with generous free tier
@@ -205,4 +182,4 @@ If AWS SES or Twilio are not suitable:
 - **MessageBird**: Multi-channel messaging platform
 - **AWS Pinpoint**: AWS service with WhatsApp support (via partners)
 
-To use alternatives, modify `/apps/web/src/lib/services/notification-service.ts` to use the alternative SDKs.
+To use alternatives, replace or extend the WhatsApp helpers in `apps/web/src/lib/services/whatsapp-cloud-api.ts` and the send path in `notification-service.ts`.
